@@ -1,0 +1,16 @@
+{
+	"name": "silverstripe/restfulserver",
+	"description": "This class gives your application a RESTful API",
+	"type": "silverstripe-module",
+	"keywords": ["silverstripe", "restfulserver"],
+	"authors": [
+	{
+		"name": "Ingo Schommer",
+		"email": "ingo@silverstripe.com"
+	}
+	],
+	"require":
+	{
+		"silverstripe/framework": "3.*",
+	}
+}
