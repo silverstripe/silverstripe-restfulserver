@@ -1,12 +1,16 @@
 {
-	"name": "silverstripe/restfulserver",
-	"description": "This class gives your application a RESTful API.",
+	"name": "silverstripe/static",
+	"description": "Static provides several extensions for exporting a SilverStripe application to both local or remote file systems.",
 	"type": "silverstripe-module",
-	"keywords": ["silverstripe", "restfulserver"],
+	"keywords": ["silverstripe", "static", "export"],
 	"authors": [
 	{
-		"name": "Ingo Schommer",
-		"email": "ingo@silverstripe.com"
+		"name": "Will Rossiter",
+		"email": "will@fullscreen.io"
+	},
+	{
+		"name": "Sam Minnéet ",
+		"email": "sam@silverstripe.com"
 	}
 	],
 	"require":
