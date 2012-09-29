@@ -1,0 +1,20 @@
+{
+	"name": "silverstripe/static",
+	"description": "Static provides several extensions for exporting a SilverStripe application to both local or remote file systems.",
+	"type": "silverstripe-module",
+	"keywords": ["silverstripe", "static", "export"],
+	"authors": [
+	{
+		"name": "Will Rossiter",
+		"email": "will@fullscreen.io"
+	},
+	{
+		"name": "Sam Minnéet ",
+		"email": "sam@silverstripe.com"
+	}
+	],
+	"require":
+	{
+		"silverstripe/framework": "3.*"
+	}
+}
