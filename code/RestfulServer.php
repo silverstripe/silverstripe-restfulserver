@@ -6,15 +6,20 @@
  * 
  * @todo Finish RestfulServer_Item and RestfulServer_List implementation and re-enable $url_handlers
  * @todo Implement PUT/POST/DELETE for relations
- * @todo Access-Control for relations (you might be allowed to view Members and Groups, but not their relation with each other)
+ * @todo Access-Control for relations (you might be allowed to view Members and Groups, 
+ *       but not their relation with each other)
  * @todo Make SearchContext specification customizeable for each class
  * @todo Allow for range-searches (e.g. on Created column)
  * @todo Allow other authentication methods (currently only HTTP BasicAuth)
  * @todo Filter relation listings by $api_access and canView() permissions
- * @todo Exclude relations when "fields" are specified through URL (they should be explicitly requested in this case)
- * @todo Custom filters per DataObject subclass, e.g. to disallow showing unpublished pages in SiteTree/Versioned/Hierarchy
- * @todo URL parameter namespacing for search-fields, limit, fields, add_fields (might all be valid dataobject properties)
- *       e.g. you wouldn't be able to search for a "limit" property on your subclass as its overlayed with the search logic
+ * @todo Exclude relations when "fields" are specified through URL (they should be explicitly 
+ *       requested in this case)
+ * @todo Custom filters per DataObject subclass, e.g. to disallow showing unpublished pages in 
+ * SiteTree/Versioned/Hierarchy
+ * @todo URL parameter namespacing for search-fields, limit, fields, add_fields 
+ *       (might all be valid dataobject properties)
+ *       e.g. you wouldn't be able to search for a "limit" property on your subclass as 
+ *       its overlayed with the search logic
  * @todo i18n integration (e.g. Page/1.xml?lang=de_DE)
  * @todo Access to extendable methods/relations like SiteTree/1/Versions or SiteTree/1/Version/22
  * @todo Respect $api_access array notation in search contexts
@@ -79,7 +84,12 @@ class RestfulServer extends Controller {
 		// Check input formats
 		if(!class_exists($className)) return $this->notFound();
 		if($id && !is_numeric($id)) return $this->notFound();
-		if($relation && !preg_match('/^[a-zA-Z_\x7f-\xff][a-zA-Z0-9_\x7f-\xff]*$/', $relation)) return $this->notFound();
+		if(
+			$relation 
+			&& !preg_match('/^[a-zA-Z_\x7f-\xff][a-zA-Z0-9_\x7f-\xff]*$/', $relation)
+			) {
+			return $this->notFound();
+		}
 		
 		// if api access is disabled, don't proceed
 		$apiAccess = singleton($className)->stat('api_access');
@@ -89,10 +99,21 @@ class RestfulServer extends Controller {
 		$this->member = $this->authenticate();
 
 		// handle different HTTP verbs
-		if($this->request->isGET() || $this->request->isHEAD()) return $this->getHandler($className, $id, $relation);
-		if($this->request->isPOST()) return $this->postHandler($className, $id, $relation);
-		if($this->request->isPUT()) return $this->putHandler($className, $id, $relation);
-		if($this->request->isDELETE()) return $this->deleteHandler($className, $id, $relation);
+		if($this->request->isGET() || $this->request->isHEAD()) {
+			return $this->getHandler($className, $id, $relation);
+		}
+		
+		if($this->request->isPOST()) {
+			return $this->postHandler($className, $id, $relation);
+		}
+		
+		if($this->request->isPUT()) {
+			return $this->putHandler($className, $id, $relation);
+		}
+
+		if($this->request->isDELETE()) {
+			return $this->deleteHandler($className, $id, $relation);
+		}
 
 		// if no HTTP verb matches, return error
 		return $this->methodNotAllowed();
@@ -201,7 +222,9 @@ class RestfulServer extends Controller {
 	 * @param array $params
 	 * @return SS_List
 	 */
-	protected function getSearchQuery($className, $params = null, $sort = null, $limit = null, $existingQuery = null) {
+	protected function getSearchQuery($className, $params = null, $sort = null, 
+		$limit = null, $existingQuery = null
+	) {
 		if(singleton($className)->hasMethod('getRestfulSearchContext')) {
 			$searchContext = singleton($className)->{'getRestfulSearchContext'}();
 		} else {
@@ -242,20 +265,30 @@ class RestfulServer extends Controller {
 		if(!$formatter) return false;
 		
 		// set custom fields
-		if($customAddFields = $this->request->getVar('add_fields')) $formatter->setCustomAddFields(explode(',',$customAddFields));
-		if($customFields = $this->request->getVar('fields')) $formatter->setCustomFields(explode(',',$customFields));
+		if($customAddFields = $this->request->getVar('add_fields')) {
+			$formatter->setCustomAddFields(explode(',',$customAddFields));
+		}
+		if($customFields = $this->request->getVar('fields')) {
+			$formatter->setCustomFields(explode(',',$customFields));
+		}
 		$formatter->setCustomRelations($this->getAllowedRelations($className));
 		
 		$apiAccess = singleton($className)->stat('api_access');
 		if(is_array($apiAccess)) {
-			$formatter->setCustomAddFields(array_intersect((array)$formatter->getCustomAddFields(), (array)$apiAccess['view']));
+			$formatter->setCustomAddFields(
+				array_intersect((array)$formatter->getCustomAddFields(), (array)$apiAccess['view'])
+			);
 			if($formatter->getCustomFields()) {
-				$formatter->setCustomFields(array_intersect((array)$formatter->getCustomFields(), (array)$apiAccess['view']));
+				$formatter->setCustomFields(
+					array_intersect((array)$formatter->getCustomFields(), (array)$apiAccess['view'])
+				);
 			} else {
 				$formatter->setCustomFields((array)$apiAccess['view']);
 			}
 			if($formatter->getCustomRelations()) {
-				$formatter->setCustomRelations(array_intersect((array)$formatter->getCustomRelations(), (array)$apiAccess['view']));
+				$formatter->setCustomRelations(
+					array_intersect((array)$formatter->getCustomRelations(), (array)$apiAccess['view'])
+				);
 			} else {
 				$formatter->setCustomRelations((array)$apiAccess['view']);
 			}
