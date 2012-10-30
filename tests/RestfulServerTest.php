@@ -54,7 +54,7 @@ class RestfulServerTest extends SapphireTest {
 	public function testAuthenticatedGET() {
 		$thing1 = $this->objFromFixture('RestfulServerTest_SecretThing', 'thing1');
 		$comment1 = $this->objFromFixture('RestfulServerTest_Comment', 'comment1');
-		
+
 		// @todo create additional mock object with authenticated VIEW permissions
 		$url = "/api/v1/RestfulServerTest_SecretThing/" . $thing1->ID;
 		$response = Director::test($url, null, null, 'GET');
@@ -416,6 +416,30 @@ class RestfulServerTest extends SapphireTest {
 		$responseArr = Convert::xml2array($response->getBody());
 		$this->assertEquals($responseArr['Rating'], 42);
 		$this->assertNotEquals($responseArr['WriteProtectedField'], 'haxx0red');
+	}
+
+	public function testCanViewRespectedInList() {
+		// Default content type
+		$url = "/api/v1/RestfulServerTest_SecretThing/";
+		$response = Director::test($url, null, null, 'GET');
+		$this->assertEquals($response->getStatusCode(), 200);
+		$this->assertNotContains('Unspeakable', $response->getBody());
+
+		// JSON content type
+		$url = "/api/v1/RestfulServerTest_SecretThing.json";
+		$response = Director::test($url, null, null, 'GET');
+		$this->assertEquals($response->getStatusCode(), 200);
+		$this->assertNotContains('Unspeakable', $response->getBody());
+
+		// With authentication
+		$_SERVER['PHP_AUTH_USER'] = 'editor@test.com';
+		$_SERVER['PHP_AUTH_PW'] = 'editor';
+		$url = "/api/v1/RestfulServerTest_SecretThing/";
+		$response = Director::test($url, null, null, 'GET');
+		$this->assertEquals($response->getStatusCode(), 200);
+		$this->assertContains('Unspeakable', $response->getBody());
+		unset($_SERVER['PHP_AUTH_USER']);
+		unset($_SERVER['PHP_AUTH_PW']);
 	}
 	
 }

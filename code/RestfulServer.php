@@ -178,7 +178,9 @@ class RestfulServer extends Controller {
 
 		if($obj instanceof SS_List) {
 			$responseFormatter->setTotalSize($obj->dataQuery()->query()->unlimitedRowCount());
-			return $responseFormatter->convertDataObjectSet($obj, $fields);
+			$objs = new ArrayList($obj->toArray());
+			foreach($objs as $obj) if(!$obj->canView()) $objs->remove($obj);
+			return $responseFormatter->convertDataObjectSet($objs, $fields);
 		} else if(!$obj) {
 			$responseFormatter->setTotalSize(0);
 			return $responseFormatter->convertDataObjectSet(new ArrayList(), $fields);
