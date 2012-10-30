@@ -1,5 +1,7 @@
 # SilverStripe RestfulServer Module
 
+[![Build Status](https://secure.travis-ci.org/silverstripe/silverstripe-restfulserver.png)](http://travis-ci.org/silverstripe/silverstripe-restfulserver)
+
 ## Overview
 
 This class gives your application a RESTful API.  All you have to do is define static $api_access = true on
