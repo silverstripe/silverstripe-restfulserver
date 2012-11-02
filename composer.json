@@ -1,0 +1,20 @@
+{
+	"name": "silverstripe/restfulserver",
+	"description": "Add a RESTful API to your SilverStripe application",
+	"type": "silverstripe-module",
+	"keywords": ["silverstripe", "rest", "api"],
+	"authors": [
+	{
+		"name": "Hamish Friedlander",
+		"email": "hamish@silverstripe.com"
+	},
+	{
+		"name": "Sam Minnee",
+		"email": "sam@silverstripe.com"
+	}
+	],
+	"require":
+	{
+		"silverstripe/framework": "3.*"
+	}
+}
