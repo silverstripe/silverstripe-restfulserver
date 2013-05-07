@@ -10,7 +10,6 @@
  *       but not their relation with each other)
  * @todo Make SearchContext specification customizeable for each class
  * @todo Allow for range-searches (e.g. on Created column)
- * @todo Allow other authentication methods (currently only HTTP BasicAuth)
  * @todo Filter relation listings by $api_access and canView() permissions
  * @todo Exclude relations when "fields" are specified through URL (they should be explicitly 
  *       requested in this case)
@@ -36,6 +35,8 @@ class RestfulServer extends Controller {
 
 	protected static $api_base = "api/v1/";
 
+	protected static $authenticator = 'BasicRestfulAuthenticator';
+
 	/**
 	 * If no extension is given in the request, resolve to this extension
 	 * (and subsequently the {@link self::$default_mimetype}.
@@ -57,7 +58,7 @@ class RestfulServer extends Controller {
 	 */
 	protected $member;
 	
-	static $allowed_actions = array(
+	public static $allowed_actions = array(
 		'index'
 	);
 	
@@ -540,21 +541,14 @@ class RestfulServer extends Controller {
 		return "Unsupported Media Type";
 	}
 	
+	/**
+	 * A function to authenticate a user
+	 *
+	 * @return Member|false the logged in member
+	 */
 	protected function authenticate() {
-		if(!isset($_SERVER['PHP_AUTH_USER']) || !isset($_SERVER['PHP_AUTH_PW'])) return false;
-		
-		if($member = Member::currentUser()) return $member;
-		$member = MemberAuthenticator::authenticate(array(
-			'Email' => $_SERVER['PHP_AUTH_USER'], 
-			'Password' => $_SERVER['PHP_AUTH_PW'],
-		), null);
-		
-		if($member) {
-			$member->LogIn(false);
-			return $member;
-		} else {
-			return false;
-		}
+		$authClass = self::config()->authenticator;
+		return $authClass::authenticate();
 	}
 	
 	/**
