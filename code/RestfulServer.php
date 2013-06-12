@@ -77,6 +77,10 @@ class RestfulServer extends Controller {
 	 * Since no $Action url-param is set, all requests are sent here.
 	 */
 	function index() {
+		// if api is disabled globally, don't proceed
+		if (!SiteConfig::current_site_config()->EnableRESTAPI)
+		return $this->permissionFailure();
+
 		if(!isset($this->urlParams['ClassName'])) return $this->notFound();
 		$className = $this->urlParams['ClassName'];
 		$id = (isset($this->urlParams['ID'])) ? $this->urlParams['ID'] : null;
