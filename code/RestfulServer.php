@@ -71,7 +71,16 @@ class RestfulServer extends Controller {
 		return new RestfulServer_List(DataObject::get($request->param("ClassName"),""));
 	}
 	*/
-	
+
+	function init() {
+		/* This sets up SiteTree the same as when viewing a page through the frontend. Versioned defaults
+		 * to Stage, and then when viewing the front-end Versioned::choose_site_stage changes it to Live.
+		 * TODO: In 3.2 we should make the default Live, then change to Stage in the admin area (with a nicer API)
+		 */
+		if (class_exists('SiteTree')) singleton('SiteTree')->extend('modelascontrollerInit', $this);
+		parent::init();
+	}
+
 	/**
 	 * This handler acts as the switchboard for the controller.
 	 * Since no $Action url-param is set, all requests are sent here.
