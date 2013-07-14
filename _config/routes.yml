@@ -1,0 +1,10 @@
+---
+Name: restfulserverroutes
+After:
+  - '#rootroutes'
+  - '#modelascontrollerroutes'
+---
+Director:
+  rules:
+   'api/v1/live': 'VersionedRestfulServer'
+   'api/v1': 'RestfulServer'
