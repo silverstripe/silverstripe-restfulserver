@@ -509,9 +509,9 @@ class RestfulServer extends Controller {
 	protected function getObjectRelationQuery($obj, $params, $sort, $limit, $relationName) {
 		// The relation method will return a DataList, that getSearchQuery subsequently manipulates
 		if($obj->hasMethod($relationName)) {
-			if($relationClass = $obj->has_one($relationName)) {
-				$joinField = $relationName . 'ID';
-				$list = DataList::create($relationClass)->byIDs(array($obj->$joinField));
+			if($obj->has_one($relationName) || $obj->has_many($relationName)) {
+				$relationClass = $obj->has_one($relationName) ? $obj->has_one($relationName) : $obj->has_many($relationName);
+				$list = DataList::create($obj->ClassName)->relation($relationName)->forForeignID(array($obj->ID));
 			} else {
 				$list = $obj->$relationName();
 			}
