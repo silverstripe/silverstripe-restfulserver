@@ -7,16 +7,16 @@ sudo: false
 
 env:
  - DB=MYSQL CORE_RELEASE=3.0
- - DB=MYSQL CORE_RELEASE=master
- - DB=PGSQL CORE_RELEASE=master
- - DB=SQLITE CORE_RELEASE=master
+ - DB=MYSQL CORE_RELEASE=3
+ - DB=PGSQL CORE_RELEASE=3
+ - DB=SQLITE CORE_RELEASE=3
 
 matrix:
   exclude:
     - php: 5.4
-      env: DB=PGSQL CORE_RELEASE=master
+      env: DB=PGSQL CORE_RELEASE=3
     - php: 5.4
-      env: DB=SQLITE CORE_RELEASE=master
+      env: DB=SQLITE CORE_RELEASE=3
     - php: 5.4
       env: DB=MYSQL CORE_RELEASE=3.0
 
