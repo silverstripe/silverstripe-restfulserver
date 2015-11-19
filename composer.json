@@ -17,11 +17,12 @@
 	{
 		"silverstripe/framework": "3.*"
 	},
-	"extra": 
+	"extra":
 	{
-		"branch-alias": 
+		"branch-alias":
 		{
 			"dev-master": "1.0.x-dev"
 		}
-	}
+	},
+	"license": "BSD-3-Clause"
 }
