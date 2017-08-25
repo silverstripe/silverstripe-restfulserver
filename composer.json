@@ -1,28 +1,25 @@
 {
-	"name": "silverstripe/restfulserver",
-	"description": "Add a RESTful API to your SilverStripe application",
-	"type": "silverstripe-module",
-	"keywords": ["silverstripe", "rest", "api"],
-	"authors": [
-	{
-		"name": "Hamish Friedlander",
-		"email": "hamish@silverstripe.com"
-	},
-	{
-		"name": "Sam Minnee",
-		"email": "sam@silverstripe.com"
-	}
-	],
-	"require":
-	{
-		"silverstripe/framework": "3.*"
-	},
-	"extra":
-	{
-		"branch-alias":
-		{
-			"dev-master": "1.0.x-dev"
-		}
-	},
-	"license": "BSD-3-Clause"
+    "name": "silverstripe/restfulserver",
+    "description": "Add a RESTful API to your SilverStripe application",
+    "type": "silverstripe-module",
+    "keywords": [
+        "silverstripe",
+        "rest",
+        "api"
+    ],
+    "authors": [
+        {
+            "name": "Hamish Friedlander",
+            "email": "hamish@silverstripe.com"
+        },
+        {
+            "name": "Sam Minnee",
+            "email": "sam@silverstripe.com"
+        }
+    ],
+    "require": {
+        "silverstripe/framework": "3.*"
+    },
+    "extra": [],
+    "license": "BSD-3-Clause"
 }
