@@ -463,6 +463,8 @@ class RestfulServerTest extends SapphireTest
         $response = Director::test($url, null, null, 'GET');
         $this->assertEquals($response->getStatusCode(), 200);
         $this->assertNotContains('Unspeakable', $response->getBody());
+        $responseArray = Convert::json2array($response->getBody());
+        $this->assertSame(0, $responseArray['totalSize']);
 
         // With authentication
         $_SERVER['PHP_AUTH_USER'] = 'editor@test.com';
@@ -471,6 +473,9 @@ class RestfulServerTest extends SapphireTest
         $response = Director::test($url, null, null, 'GET');
         $this->assertEquals($response->getStatusCode(), 200);
         $this->assertContains('Unspeakable', $response->getBody());
+        // Assumption: default formatter is XML
+        $responseArray = Convert::xml2array($response->getBody());
+        $this->assertEquals(1, $responseArray['@attributes']['totalSize']);
         unset($_SERVER['PHP_AUTH_USER']);
         unset($_SERVER['PHP_AUTH_PW']);
     }
