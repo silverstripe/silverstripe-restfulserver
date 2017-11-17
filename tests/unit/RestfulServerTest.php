@@ -188,18 +188,31 @@ class RestfulServerTest extends SapphireTest
             $response->getHeader('Location'),
             Controller::join_links(Director::absoluteBaseURL(), $url, $responseArr['ID'])
         );
-    
+
         unset($_SERVER['PHP_AUTH_USER']);
         unset($_SERVER['PHP_AUTH_PW']);
     }
-    
+
+    public function testPostWithoutBodyReturnsNoContent()
+    {
+        $_SERVER['PHP_AUTH_USER'] = 'editor@test.com';
+        $_SERVER['PHP_AUTH_PW'] = 'editor';
+
+        $url = '/api/v1/RestfulServerTest_Comment';
+        $response = Director::test($url, null, null, 'POST');
+
+        $this->assertEquals('No Content', $response->getBody());
+
+        unset($_SERVER['PHP_AUTH_USER'], $_SERVER['PHP_AUTH_PW']);
+    }
+
     public function testPUTwithJSON()
     {
         $comment1 = $this->objFromFixture('RestfulServerTest_Comment', 'comment1');
-        
+
         $_SERVER['PHP_AUTH_USER'] = 'editor@test.com';
         $_SERVER['PHP_AUTH_PW'] = 'editor';
-        
+
         // by mimetype
         $url = "/api/v1/RestfulServerTest_Comment/" . $comment1->ID;
         $body = '{"Comment":"updated"}';
@@ -463,6 +476,8 @@ class RestfulServerTest extends SapphireTest
         $response = Director::test($url, null, null, 'GET');
         $this->assertEquals($response->getStatusCode(), 200);
         $this->assertNotContains('Unspeakable', $response->getBody());
+        $responseArray = Convert::json2array($response->getBody());
+        $this->assertSame(0, $responseArray['totalSize']);
 
         // With authentication
         $_SERVER['PHP_AUTH_USER'] = 'editor@test.com';
@@ -471,6 +486,9 @@ class RestfulServerTest extends SapphireTest
         $response = Director::test($url, null, null, 'GET');
         $this->assertEquals($response->getStatusCode(), 200);
         $this->assertContains('Unspeakable', $response->getBody());
+        // Assumption: default formatter is XML
+        $responseArray = Convert::xml2array($response->getBody());
+        $this->assertEquals(1, $responseArray['@attributes']['totalSize']);
         unset($_SERVER['PHP_AUTH_USER']);
         unset($_SERVER['PHP_AUTH_PW']);
     }
