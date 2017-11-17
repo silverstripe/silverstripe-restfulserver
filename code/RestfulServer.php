@@ -405,7 +405,11 @@ class RestfulServer extends Controller
             return $this->unsupportedMediaType();
         }
 
+        /** @var DataObject|string */
         $obj = $this->updateDataObject($obj, $reqFormatter);
+        if (is_string($obj)) {
+            return $obj;
+        }
 
         $this->getResponse()->setStatusCode(200); // Success
         $this->getResponse()->addHeader('Content-Type', $responseFormatter->getOutputContentType());
@@ -470,7 +474,11 @@ class RestfulServer extends Controller
 
         $responseFormatter = $this->getResponseDataFormatter($className);
 
+        /** @var DataObject|string $obj */
         $obj = $this->updateDataObject($obj, $reqFormatter);
+        if (is_string($obj)) {
+            return $obj;
+        }
 
         $this->getResponse()->setStatusCode(201); // Created
         $this->getResponse()->addHeader('Content-Type', $responseFormatter->getOutputContentType());
@@ -498,7 +506,7 @@ class RestfulServer extends Controller
      *
      * @param DataObject $obj
      * @param DataFormatter $formatter
-     * @return DataObject The passed object
+     * @return DataObject|string The passed object, or "No Content" if incomplete input data is provided
      */
     protected function updateDataObject($obj, $formatter)
     {

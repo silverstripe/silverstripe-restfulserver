@@ -188,18 +188,31 @@ class RestfulServerTest extends SapphireTest
             $response->getHeader('Location'),
             Controller::join_links(Director::absoluteBaseURL(), $url, $responseArr['ID'])
         );
-    
+
         unset($_SERVER['PHP_AUTH_USER']);
         unset($_SERVER['PHP_AUTH_PW']);
     }
-    
+
+    public function testPostWithoutBodyReturnsNoContent()
+    {
+        $_SERVER['PHP_AUTH_USER'] = 'editor@test.com';
+        $_SERVER['PHP_AUTH_PW'] = 'editor';
+
+        $url = '/api/v1/RestfulServerTest_Comment';
+        $response = Director::test($url, null, null, 'POST');
+
+        $this->assertEquals('No Content', $response->getBody());
+
+        unset($_SERVER['PHP_AUTH_USER'], $_SERVER['PHP_AUTH_PW']);
+    }
+
     public function testPUTwithJSON()
     {
         $comment1 = $this->objFromFixture('RestfulServerTest_Comment', 'comment1');
-        
+
         $_SERVER['PHP_AUTH_USER'] = 'editor@test.com';
         $_SERVER['PHP_AUTH_PW'] = 'editor';
-        
+
         // by mimetype
         $url = "/api/v1/RestfulServerTest_Comment/" . $comment1->ID;
         $body = '{"Comment":"updated"}';
