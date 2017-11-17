@@ -229,20 +229,22 @@ class RestfulServer extends Controller
         $fields = $rawFields ? explode(',', $rawFields) : null;
 
         if ($obj instanceof SS_List) {
-            $responseFormatter->setTotalSize($obj->dataQuery()->query()->unlimitedRowCount());
-            $objs = new ArrayList($obj->toArray());
+            $objs = ArrayList::create($obj->toArray());
             foreach ($objs as $obj) {
                 if (!$obj->canView($this->getMember())) {
                     $objs->remove($obj);
                 }
             }
+            $responseFormatter->setTotalSize($objs->count());
             return $responseFormatter->convertDataObjectSet($objs, $fields);
-        } elseif (!$obj) {
+        }
+
+        if (!$obj) {
             $responseFormatter->setTotalSize(0);
             return $responseFormatter->convertDataObjectSet(new ArrayList(), $fields);
-        } else {
-            return $responseFormatter->convertDataObject($obj, $fields);
         }
+
+        return $responseFormatter->convertDataObject($obj, $fields);
     }
 
     /**
