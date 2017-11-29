@@ -1,0 +1,66 @@
+SilverStripe\Security\Member:
+   editor:
+      FirstName: Editor
+      Email: editor@test.com
+      Password: editor
+   user:
+      FirstName: User
+      Email: user@test.com
+      Password: user
+SilverStripe\Security\Group:
+   editorgroup:
+      Title: Editors
+      Code: editors
+      Members: =>SilverStripe\Security\Member.editor
+   usergroup:
+      Title: Users
+      Code: users
+      Members: =>SilverStripe\Security\Member.user
+SilverStripe\Security\Permission:
+   perm1:
+      Code: CREATE_Comment
+      Group: =>SilverStripe\Security\Group.usergroup
+   perm3:
+      Code: EDIT_Comment
+      Group: =>SilverStripe\Security\Group.editorgroup
+   perm4:
+      Code: DELETE_Comment
+      Group: =>SilverStripe\Security\Group.editorgroup
+   perm5:
+      Code: CREATE_Comment
+      Group: =>SilverStripe\Security\Group.editorgroup
+   perm6:
+      Code: VIEW_SecretThing
+      Group: =>SilverStripe\Security\Group.editorgroup
+SilverStripe\RestfulServer\Tests\Stubs\RestfulServerTestPage:
+   page1:
+       Title: Testpage without API Access
+SilverStripe\RestfulServer\Tests\Stubs\RestfulServerTestComment:
+   comment1:
+      Name: Joe
+      Comment: This is a test comment
+      Page: =>SilverStripe\RestfulServer\Tests\Stubs\RestfulServerTestPage.page1
+SilverStripe\RestfulServer\Tests\Stubs\RestfulServerTestAuthor:
+   author1:
+      FirstName: Author 1
+   author2:
+      FirstName: Author 2
+   author3:
+      Firstname: Author 3
+   author4:
+      FirstName: Author 4
+      RelatedAuthors: =>SilverStripe\RestfulServer\Tests\Stubs\RestfulServerTestAuthor.author2,=>SilverStripe\RestfulServer\Tests\Stubs\RestfulServerTestAuthor.author3
+SilverStripe\RestfulServer\Tests\Stubs\RestfulServerTestAuthorRating:
+   rating1:
+      Rating: 3
+      WriteProtectedField: Dont overwrite me
+      SecretField: Dont look at me!
+      Author: =>SilverStripe\RestfulServer\Tests\Stubs\RestfulServerTestAuthor.author1
+      SecretRelation: =>SilverStripe\RestfulServer\Tests\Stubs\RestfulServerTestAuthor.author1
+   rating2:
+      Rating: 5
+      Author: =>SilverStripe\RestfulServer\Tests\Stubs\RestfulServerTestAuthor.author1
+      SecretRelation: =>SilverStripe\RestfulServer\Tests\Stubs\RestfulServerTestAuthor.author1
+SilverStripe\RestfulServer\Tests\Stubs\RestfulServerTestSecretThing:
+   thing1:
+      Name: Unspeakable

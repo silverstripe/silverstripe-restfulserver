@@ -1,39 +1,63 @@
 # SilverStripe RestfulServer Module
 
-[![Build Status](https://secure.travis-ci.org/silverstripe/silverstripe-restfulserver.png)](http://travis-ci.org/silverstripe/silverstripe-restfulserver)
+[![Build Status](https://travis-ci.org/silverstripe/silverstripe-restfulserver.svg?branch=master)](https://travis-ci.org/silverstripe/silverstripe-restfulserver)
+[![Scrutinizer Code Quality](https://scrutinizer-ci.com/g/silverstripe/silverstripe-restfulserver/badges/quality-score.png?b=master)](https://scrutinizer-ci.com/g/silverstripe/silverstripe-restfulserver/?branch=master)
+[![codecov](https://codecov.io/gh/silverstripe/silverstripe-restfulserver/branch/master/graph/badge.svg)](https://codecov.io/gh/silverstripe/silverstripe-restfulserver)
 
 ## Overview
 
-This class gives your application a RESTful API.  All you have to do is define static $api_access = true on
-the appropriate DataObjects.  You will need to ensure that all of your data manipulation and security is defined in
+This class gives your application a RESTful API.  All you have to do is set the `api_access` configuration option to `true`
+on the appropriate DataObjects.  You will need to ensure that all of your data manipulation and security is defined in
 your model layer (ie, the DataObject classes) and not in your Controllers.  This is the recommended design for SilverStripe
 applications.
 
 ## Requirements
 
- * SilverStripe 3.0 or newer
+* SilverStripe 4.0 or higher
+
+For a SilverStripe 3.x compatible version of this module, please see the [1.0 branch, or 1.x release line](https://github.com/silverstripe/silverstripe-restfulserver/tree/1.0#readme).
 
 ## Configuration
 
-Enabling restful access on a model will also enable a SOAP API, see `SOAPModelAccess`.
-
-Example DataObject with simple api access, giving full access to all object properties and relations,
+Example DataObject with simple API access, giving full access to all object properties and relations,
 unless explicitly controlled through model permissions.
 
-	class Article extends DataObject {
-		static $db = array('Title'=>'Text','Published'=>'Boolean');
-		static $api_access = true;
-	}
+```php
+namespace Vendor\Project;
 
-Example DataObject with advanced api access, limiting viewing and editing to Title attribute only:
+use SilverStripe\ORM\DataObject;
 
-	class Article extends DataObject {
-		static $db = array('Title'=>'Text','Published'=>'Boolean');
-		static $api_access = array(
-			'view' => array('Title'),
-			'edit' => array('Title'),
-		);
-	}
+class Article extends DataObject {
+
+	private static $db = [
+        'Title'=>'Text',
+        'Published'=>'Boolean'
+    ];
+
+	private static $api_access = true;
+}
+```
+
+Example DataObject with advanced API access, limiting viewing and editing to Title attribute only:
+
+```php
+namespace Vendor\Project;
+
+use SilverStripe\ORM\DataObject;
+
+class Article extends DataObject {
+
+    private static $db = [
+        'Title'=>'Text',
+        'Published'=>'Boolean'
+    ];
+
+    private static $api_access = [
+        'view' => ['Title'],
+        'edit' => ['Title']
+    ];
+}
+```
 
 ## Supported operations
 
@@ -66,7 +90,7 @@ to the url, e.g. /api/v1/(ClassName)/?Title=mytitle.
 
 ## Access control
 
-Access control is implemented through the usual Member system with Basicauth authentication only.
+Access control is implemented through the usual Member system with BasicAuth authentication only.
 By default, you have to bear the ADMIN permission to retrieve or send any data.
 You should override the following built-in methods to customize permission control on a
 class- and object-level:
@@ -76,7 +100,7 @@ class- and object-level:
 - `DataObject::canDelete()`
 - `DataObject::canCreate()`
 
-See `DataObject` documentation for further details.
+See `SilverStripe\ORM\DataObject` documentation for further details.
 
 You can specify the character-encoding for any input on the HTTP Content-Type.
 At the moment, only UTF-8 is supported. All output is made in UTF-8 regardless of Accept headers.
