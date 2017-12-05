@@ -49,7 +49,9 @@ SilverStripe\RestfulServer\Tests\Stubs\RestfulServerTestAuthor:
       Firstname: Author 3
    author4:
       FirstName: Author 4
-      RelatedAuthors: =>SilverStripe\RestfulServer\Tests\Stubs\RestfulServerTestAuthor.author2,=>SilverStripe\RestfulServer\Tests\Stubs\RestfulServerTestAuthor.author3
+      RelatedAuthors: 
+        - =>SilverStripe\RestfulServer\Tests\Stubs\RestfulServerTestAuthor.author2
+        - =>SilverStripe\RestfulServer\Tests\Stubs\RestfulServerTestAuthor.author3
 SilverStripe\RestfulServer\Tests\Stubs\RestfulServerTestAuthorRating:
    rating1:
       Rating: 3

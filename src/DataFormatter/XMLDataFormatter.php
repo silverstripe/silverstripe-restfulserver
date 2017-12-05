@@ -2,6 +2,7 @@
 
 namespace SilverStripe\RestfulServer\DataFormatter;
 
+use SilverStripe\RestfulServer\DataFormatter;
 use SilverStripe\ORM\DataObjectInterface;
 use SilverStripe\Control\Controller;
 use SilverStripe\ORM\DataObject;
@@ -10,8 +11,7 @@ use SilverStripe\Core\Convert;
 use SilverStripe\ORM\SS_List;
 
 /**
- * @package framework
- * @subpackage formatters
+ * Formats a DataObject's member fields into an XML string
  */
 class XMLDataFormatter extends DataFormatter
 {

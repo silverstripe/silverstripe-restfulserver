@@ -15,9 +15,6 @@ namespace SilverStripe\RestfulServer\DataFormatter;
  * @todo Format response form encoded as well - currently uses XMLDataFormatter
  *
  * @author Cam Spiers <camspiers at gmail dot com>
- *
- * @package framework
- * @subpackage formatters
  */
 class FormEncodedDataFormatter extends XMLDataFormatter
 {

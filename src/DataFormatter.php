@@ -1,6 +1,6 @@
 <?php
 
-namespace SilverStripe\RestfulServer\DataFormatter;
+namespace SilverStripe\RestfulServer;
 
 use SilverStripe\Core\ClassInfo;
 use SilverStripe\Core\Config\Configurable;
@@ -11,9 +11,6 @@ use SilverStripe\ORM\SS_List;
 /**
  * A DataFormatter object handles transformation of data from SilverStripe model objects to a particular output
  * format, and vice versa.  This is most commonly used in developing RESTful APIs.
- *
- * @package framework
- * @subpackage formatters
  */
 abstract class DataFormatter
 {

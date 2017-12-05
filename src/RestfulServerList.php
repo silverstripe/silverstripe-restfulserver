@@ -4,9 +4,6 @@ namespace SilverStripe\RestfulServer;
 
 /**
  * Restful server handler for a SS_List
- *
- * @package framework
- * @subpackage api
  */
 class RestfulServerList
 {

@@ -12,7 +12,7 @@ use SilverStripe\ORM\DataList;
 use SilverStripe\Security\Member;
 use SilverStripe\Security\Security;
 use SilverStripe\Control\Controller;
-use SilverStripe\RestfulServer\DataFormatter\DataFormatter;
+use SilverStripe\RestfulServer\DataFormatter;
 use SilverStripe\Control\HTTPRequest;
 
 /**
@@ -20,7 +20,6 @@ use SilverStripe\Control\HTTPRequest;
  * Relies on serialization/deserialization into different formats provided
  * by the DataFormatter APIs in core.
  *
- * @todo Finish RestfulServerItem and RestfulServerList implementation and re-enable $url_handlers
  * @todo Implement PUT/POST/DELETE for relations
  * @todo Access-Control for relations (you might be allowed to view Members and Groups,
  *       but not their relation with each other)
@@ -38,21 +37,24 @@ use SilverStripe\Control\HTTPRequest;
  * @todo i18n integration (e.g. Page/1.xml?lang=de_DE)
  * @todo Access to extendable methods/relations like SiteTree/1/Versions or SiteTree/1/Version/22
  * @todo Respect $api_access array notation in search contexts
- *
- * @package framework
- * @subpackage api
  */
 class RestfulServer extends Controller
 {
     private static $url_handlers = array(
         '$ClassName!/$ID/$Relation' => 'handleAction',
         '' => 'notFound'
-        #'$ClassName/#ID' => 'handleItem',
-        #'$ClassName' => 'handleList',
     );
 
+    /**
+     * @config
+     * @var string root of the api route, MUST have a trailing slash
+     */
     private static $api_base = "api/v1/";
 
+    /**
+     * @config
+     * @var string Class name for an authenticator to use on API access
+     */
     private static $authenticator = BasicRestfulAuthenticator::class;
 
     /**
@@ -80,16 +82,6 @@ class RestfulServer extends Controller
         'index',
         'notFound'
     );
-
-    /*
-    function handleItem($request) {
-        return new RestfulServerItem(DataObject::get_by_id($request->param("ClassName"), $request->param("ID")));
-    }
-
-    function handleList($request) {
-        return new RestfulServerList(DataObject::get($request->param("ClassName"),""));
-    }
-    */
 
     public function init()
     {
@@ -470,7 +462,8 @@ class RestfulServer extends Controller
         }
 
         $urlSafeClassName = $this->sanitiseClassName(get_class($obj));
-        $objHref = Director::absoluteURL(self::$api_base . "$urlSafeClassName/$obj->ID" . $type);
+        $apiBase = $this->config()->api_base;
+        $objHref = Director::absoluteURL($apiBase . "$urlSafeClassName/$obj->ID" . $type);
         $this->getResponse()->addHeader('Location', $objHref);
 
         return $responseFormatter->convertDataObject($obj);
@@ -540,7 +533,8 @@ class RestfulServer extends Controller
         }
 
         $urlSafeClassName = $this->sanitiseClassName(get_class($obj));
-        $objHref = Director::absoluteURL(self::$api_base . "$urlSafeClassName/$obj->ID" . $type);
+        $apiBase = $this->config()->api_base;
+        $objHref = Director::absoluteURL($apiBase . "$urlSafeClassName/$obj->ID" . $type);
         $this->getResponse()->addHeader('Location', $objHref);
 
         return $responseFormatter->convertDataObject($obj);

@@ -6,9 +6,6 @@ use SilverStripe\ORM\SS_List;
 
 /**
  * Restful server handler for a single DataObject
- *
- * @package framework
- * @subpackage api
  */
 class RestfulServerItem
 {

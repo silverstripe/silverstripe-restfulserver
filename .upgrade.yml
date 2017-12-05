@@ -9,7 +9,7 @@ mappings:
   RestfulServerTestComment: SilverStripe\RestfulServer\Tests\Stubs\RestfulServerTestComment
   RestfulServerTestPage: SilverStripe\RestfulServer\Tests\Stubs\RestfulServerTestPage
   RestfulServerTestSecretThing: SilverStripe\RestfulServer\Tests\Stubs\RestfulServerTestSecretThing
-  DataFormatter: SilverStripe\RestfulServer\DataFormatter\DataFormatter
+  DataFormatter: SilverStripe\RestfulServer\DataFormatter
   FormEncodedDataFormatter: SilverStripe\RestfulServer\DataFormatter\FormEncodedDataFormatter
   JSONDataFormatter: SilverStripe\RestfulServer\DataFormatter\JSONDataFormatter
   XMLDataFormatter: SilverStripe\RestfulServer\DataFormatter\XMLDataFormatter

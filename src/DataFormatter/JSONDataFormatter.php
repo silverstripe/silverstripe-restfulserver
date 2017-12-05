@@ -2,6 +2,7 @@
 
 namespace SilverStripe\RestfulServer\DataFormatter;
 
+use SilverStripe\RestfulServer\DataFormatter;
 use SilverStripe\ORM\DataObjectInterface;
 use SilverStripe\Core\Convert;
 use SilverStripe\View\ArrayData;
@@ -9,8 +10,7 @@ use SilverStripe\Control\Director;
 use SilverStripe\ORM\SS_List;
 
 /**
- * @package framework
- * @subpackage formatters
+ * Formats a DataObject's member fields into a JSON string
  */
 class JSONDataFormatter extends DataFormatter
 {
