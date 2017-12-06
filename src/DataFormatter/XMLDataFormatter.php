@@ -2,12 +2,12 @@
 
 namespace SilverStripe\RestfulServer\DataFormatter;
 
-use SilverStripe\RestfulServer\DataFormatter;
-use SilverStripe\ORM\DataObjectInterface;
 use SilverStripe\Control\Controller;
-use SilverStripe\ORM\DataObject;
-use SilverStripe\Control\Director;
 use SilverStripe\Core\Convert;
+use SilverStripe\RestfulServer\DataFormatter;
+use SilverStripe\ORM\DataObject;
+use SilverStripe\ORM\DataObjectInterface;
+use SilverStripe\Control\Director;
 use SilverStripe\ORM\SS_List;
 
 /**

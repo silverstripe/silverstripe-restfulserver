@@ -2,18 +2,17 @@
 
 namespace SilverStripe\RestfulServer;
 
-use SilverStripe\RestfulServer\BasicRestfulAuthenticator;
-use SilverStripe\CMS\Model\SiteTree;
-use SilverStripe\ORM\SS_List;
 use SilverStripe\ORM\ArrayList;
+use SilverStripe\Core\Config\Config;
+use SilverStripe\Control\Controller;
+use SilverStripe\ORM\DataList;
 use SilverStripe\ORM\DataObject;
 use SilverStripe\Control\Director;
-use SilverStripe\ORM\DataList;
+use SilverStripe\Control\HTTPRequest;
+use SilverStripe\ORM\SS_List;
 use SilverStripe\Security\Member;
 use SilverStripe\Security\Security;
-use SilverStripe\Control\Controller;
-use SilverStripe\RestfulServer\DataFormatter;
-use SilverStripe\Control\HTTPRequest;
+use SilverStripe\CMS\Model\SiteTree;
 
 /**
  * Generic RESTful server, which handles webservice access to arbitrary DataObjects.
@@ -140,12 +139,12 @@ class RestfulServer extends Controller
         }
         if ($relation
             && !preg_match('/^[a-zA-Z_\x7f-\xff][a-zA-Z0-9_\x7f-\xff]*$/', $relation)
-            ) {
+        ) {
             return $this->notFound();
         }
 
         // if api access is disabled, don't proceed
-        $apiAccess = singleton($className)->stat('api_access');
+        $apiAccess = Config::inst()->get($className, 'api_access');
         if (!$apiAccess) {
             return $this->permissionFailure();
         }
@@ -202,10 +201,10 @@ class RestfulServer extends Controller
      *
      * @todo Access checking
      *
-     * @param String $className
+     * @param string $className
      * @param Int $id
-     * @param String $relation
-     * @return String The serialized representation of the requested object(s) - usually XML or JSON.
+     * @param string $relation
+     * @return string The serialized representation of the requested object(s) - usually XML or JSON.
      */
     protected function getHandler($className, $id, $relationName)
     {
@@ -311,7 +310,7 @@ class RestfulServer extends Controller
      * extension or mimetype. Falls back to {@link self::$default_extension}.
      *
      * @param boolean $includeAcceptHeader Determines wether to inspect and prioritize any HTTP Accept headers
-     * @param String Classname of a DataObject
+     * @param string Classname of a DataObject
      * @return DataFormatter
      */
     protected function getDataFormatter($includeAcceptHeader = false, $className = null)
@@ -353,7 +352,7 @@ class RestfulServer extends Controller
         }
         $formatter->setCustomRelations($this->getAllowedRelations($className));
 
-        $apiAccess = singleton($className)->stat('api_access');
+        $apiAccess = Config::inst()->get($className, 'api_access');
         if (is_array($apiAccess)) {
             $formatter->setCustomAddFields(
                 array_intersect((array)$formatter->getCustomAddFields(), (array)$apiAccess['view'])
@@ -384,7 +383,7 @@ class RestfulServer extends Controller
     }
 
     /**
-     * @param String Classname of a DataObject
+     * @param string Classname of a DataObject
      * @return DataFormatter
      */
     protected function getRequestDataFormatter($className = null)
@@ -393,7 +392,7 @@ class RestfulServer extends Controller
     }
 
     /**
-     * @param String Classname of a DataObject
+     * @param string Classname of a DataObject
      * @return DataFormatter
      */
     protected function getResponseDataFormatter($className = null)
@@ -493,7 +492,8 @@ class RestfulServer extends Controller
                 return $this->notFound();
             }
 
-            if (!$obj->stat('allowed_actions') || !in_array($relation, $obj->stat('allowed_actions'))) {
+            if (!Config::inst()->get($className, 'allowed_actions') ||
+                !in_array($relation, Config::inst()->get($className, 'allowed_actions'))) {
                 return $this->permissionFailure();
             }
 
@@ -568,7 +568,7 @@ class RestfulServer extends Controller
         }
 
         // @todo Disallow editing of certain keys in database
-        $data = array_diff_key($data, array('ID', 'Created'));
+        $data = array_diff_key($data, ['ID', 'Created']);
 
         $className = $this->unsanitiseClassName($this->request->param('ClassName'));
         $apiAccess = singleton($className)->config()->api_access;
@@ -593,7 +593,7 @@ class RestfulServer extends Controller
      */
     protected function getObjectQuery($className, $id, $params)
     {
-        return DataList::create($className)->byIDs(array($id));
+        return DataList::create($className)->byIDs([$id]);
     }
 
     /**
@@ -632,7 +632,9 @@ class RestfulServer extends Controller
                 $list = $obj->$relationName();
             }
 
-            $apiAccess = singleton($list->dataClass())->stat('api_access');
+            $apiAccess = Config::inst()->get($list->dataClass(), 'api_access');
+
+
             if (!$apiAccess) {
                 return false;
             }
@@ -695,7 +697,7 @@ class RestfulServer extends Controller
      */
     protected function getAllowedRelations($class, $member = null)
     {
-        $allowedRelations = array();
+        $allowedRelations = [];
         $obj = singleton($class);
         $relations = (array)$obj->hasOne() + (array)$obj->hasMany() + (array)$obj->manyMany();
         if ($relations) {
@@ -703,7 +705,7 @@ class RestfulServer extends Controller
                 //remove dot notation from relation names
                 $parts = explode('.', $relClass);
                 $relClass = array_shift($parts);
-                if (singleton($relClass)->stat('api_access')) {
+                if (Config::inst()->get($relClass, 'api_access')) {
                     $allowedRelations[] = $relName;
                 }
             }
