@@ -1,0 +1,15 @@
+mappings:
+  BasicRestfulAuthenticator: SilverStripe\RestfulServer\BasicRestfulAuthenticator
+  RestfulServer: SilverStripe\RestfulServer\RestfulServer
+  RestfulServerItem: SilverStripe\RestfulServer\RestfulServerItem
+  RestfulServerList: SilverStripe\RestfulServer\RestfulServerList
+  RestfulServerTest: SilverStripe\RestfulServer\Tests\RestfulServerTest
+  RestfulServerTestAuthor: SilverStripe\RestfulServer\Tests\Stubs\RestfulServerTestAuthor
+  RestfulServerTestAuthorRating: SilverStripe\RestfulServer\Tests\Stubs\RestfulServerTestAuthorRating
+  RestfulServerTestComment: SilverStripe\RestfulServer\Tests\Stubs\RestfulServerTestComment
+  RestfulServerTestPage: SilverStripe\RestfulServer\Tests\Stubs\RestfulServerTestPage
+  RestfulServerTestSecretThing: SilverStripe\RestfulServer\Tests\Stubs\RestfulServerTestSecretThing
+  DataFormatter: SilverStripe\RestfulServer\DataFormatter
+  FormEncodedDataFormatter: SilverStripe\RestfulServer\DataFormatter\FormEncodedDataFormatter
+  JSONDataFormatter: SilverStripe\RestfulServer\DataFormatter\JSONDataFormatter
+  XMLDataFormatter: SilverStripe\RestfulServer\DataFormatter\XMLDataFormatter

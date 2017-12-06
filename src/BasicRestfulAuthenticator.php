@@ -1,5 +1,12 @@
 <?php
 
+namespace SilverStripe\RestfulServer;
+
+use SilverStripe\Security\Authenticator;
+use SilverStripe\Control\Controller;
+use SilverStripe\Core\Injector\Injector;
+use SilverStripe\Security\Security;
+
 /**
  * A simple authenticator for the Restful server.
  *
@@ -19,23 +26,25 @@ class BasicRestfulAuthenticator
      */
     public static function authenticate()
     {
-        //if there is no username or password, break
+        //if there is no username or password, fail
         if (!isset($_SERVER['PHP_AUTH_USER']) || !isset($_SERVER['PHP_AUTH_PW'])) {
-            return false;
+            return null;
         }
 
-        //Attempt to authenticate with the default authenticator for the site
-        $authClass = Authenticator::get_default_authenticator();
-        $member = $authClass::authenticate(array(
+        // With a valid user and password, check the password is correct
+        $data = [
             'Email' => $_SERVER['PHP_AUTH_USER'],
             'Password' => $_SERVER['PHP_AUTH_PW'],
-        ));
-
-        //Log the member in and return the member, if they were found
-        if ($member) {
-            $member->LogIn(false);
-            return $member;
+        ];
+        $request = Controller::curr()->getRequest();
+        $authenticators = Security::singleton()->getApplicableAuthenticators(Authenticator::LOGIN);
+        $member = null;
+        foreach ($authenticators as $authenticator) {
+            $member = $authenticator->authenticate($data, $request);
+            if ($member) {
+                break;
+            }
         }
-        return false;
+        return $member;
     }
 }
