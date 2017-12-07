@@ -2,10 +2,10 @@
 
 namespace SilverStripe\RestfulServer\DataFormatter;
 
+use SilverStripe\View\ArrayData;
+use SilverStripe\Core\Convert;
 use SilverStripe\RestfulServer\DataFormatter;
 use SilverStripe\ORM\DataObjectInterface;
-use SilverStripe\Core\Convert;
-use SilverStripe\View\ArrayData;
 use SilverStripe\Control\Director;
 use SilverStripe\ORM\SS_List;
 

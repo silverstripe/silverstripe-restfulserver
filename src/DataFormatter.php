@@ -3,6 +3,7 @@
 namespace SilverStripe\RestfulServer;
 
 use SilverStripe\Core\ClassInfo;
+use SilverStripe\Core\Config\Config;
 use SilverStripe\Core\Config\Configurable;
 use SilverStripe\ORM\DataObject;
 use SilverStripe\ORM\DataObjectInterface;
@@ -115,9 +116,9 @@ abstract class DataFormatter
     {
         $classes = ClassInfo::subclassesFor(DataFormatter::class);
         array_shift($classes);
-        $sortedClasses = array();
+        $sortedClasses = [];
         foreach ($classes as $class) {
-            $sortedClasses[$class] = singleton($class)->stat('priority');
+            $sortedClasses[$class] = Config::inst()->get($class, 'priority');
         }
         arsort($sortedClasses);
         foreach ($sortedClasses as $className => $priority) {
@@ -155,9 +156,9 @@ abstract class DataFormatter
     {
         $classes = ClassInfo::subclassesFor(DataFormatter::class);
         array_shift($classes);
-        $sortedClasses = array();
+        $sortedClasses = [];
         foreach ($classes as $class) {
-            $sortedClasses[$class] = singleton($class)->stat('priority');
+            $sortedClasses[$class] = Config::inst()->get($class, 'priority');
         }
         arsort($sortedClasses);
         foreach ($sortedClasses as $className => $priority) {
@@ -294,7 +295,7 @@ abstract class DataFormatter
      */
     protected function getFieldsForObj($obj)
     {
-        $dbFields = array();
+        $dbFields = [];
 
         // if custom fields are specified, only select these
         if (is_array($this->customFields)) {
@@ -320,7 +321,7 @@ abstract class DataFormatter
         }
 
         // add default required fields
-        $dbFields = array_merge($dbFields, array('ID'=>'Int'));
+        $dbFields = array_merge($dbFields, ['ID' => 'Int']);
 
         if (is_array($this->removeFields)) {
             $dbFields = array_diff_key($dbFields, array_combine($this->removeFields, $this->removeFields));

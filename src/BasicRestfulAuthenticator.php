@@ -4,7 +4,6 @@ namespace SilverStripe\RestfulServer;
 
 use SilverStripe\Security\Authenticator;
 use SilverStripe\Control\Controller;
-use SilverStripe\Core\Injector\Injector;
 use SilverStripe\Security\Security;
 
 /**
