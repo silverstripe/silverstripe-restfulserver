@@ -189,10 +189,12 @@ abstract class DataFormatter
 
     /**
      * @param array $fields
+     * @return $this
      */
     public function setCustomFields($fields)
     {
         $this->customFields = $fields;
+        return $this;
     }
 
     /**
@@ -205,18 +207,22 @@ abstract class DataFormatter
 
     /**
      * @param array $fields
+     * @return $this
      */
     public function setCustomAddFields($fields)
     {
         $this->customAddFields = $fields;
+        return $this;
     }
 
     /**
      * @param array $relations
+     * @return $this
      */
     public function setCustomRelations($relations)
     {
         $this->customRelations = $relations;
+        return $this;
     }
 
     /**
@@ -237,10 +243,12 @@ abstract class DataFormatter
 
     /**
      * @param array $fields
+     * @return $this
      */
     public function setRemoveFields($fields)
     {
         $this->removeFields = $fields;
+        return $this;
     }
 
     /**
@@ -258,10 +266,12 @@ abstract class DataFormatter
 
     /**
      * @param int $size
+     * @return $this
      */
     public function setTotalSize($size)
     {
         $this->totalSize = (int)$size;
+        return $this;
     }
 
     /**
@@ -325,7 +335,6 @@ abstract class DataFormatter
     abstract public function supportedExtensions();
 
     abstract public function supportedMimeTypes();
-
 
     /**
      * Convert a single data object to this format.  Return a string.
