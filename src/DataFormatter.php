@@ -301,7 +301,9 @@ abstract class DataFormatter
         if (is_array($this->customFields)) {
             foreach ($this->customFields as $fieldName) {
                 // @todo Possible security risk by making methods accessible - implement field-level security
-                if ($obj->hasField($fieldName) || $obj->hasMethod("get{$fieldName}")) {
+                if (($obj->hasField($fieldName) && !is_object($obj->getField($fieldName)))
+                    || $obj->hasMethod("get{$fieldName}")
+                ) {
                     $dbFields[$fieldName] = $fieldName;
                 }
             }
