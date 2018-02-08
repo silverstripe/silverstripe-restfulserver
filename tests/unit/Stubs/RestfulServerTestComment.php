@@ -2,12 +2,10 @@
 
 namespace SilverStripe\RestfulServer\Tests\Stubs;
 
-use SilverStripe\RestfulServer\Tests\Stubs\RestfulServerTestPage;
-use SilverStripe\RestfulServer\Tests\Stubs\RestfulServerTestAuthor;
-use SilverStripe\Security\Permission;
-use SilverStripe\ORM\DataObject;
-use SilverStripe\Security\PermissionProvider;
 use SilverStripe\Dev\TestOnly;
+use SilverStripe\ORM\DataObject;
+use SilverStripe\Security\Permission;
+use SilverStripe\Security\PermissionProvider;
 
 /**
  * Everybody can view comments, logged in members in the "users" group can create comments,

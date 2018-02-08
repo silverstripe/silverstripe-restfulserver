@@ -2,9 +2,9 @@
 
 namespace SilverStripe\RestfulServer\Tests\Stubs;
 
-use SilverStripe\Security\Permission;
-use SilverStripe\ORM\DataObject;
 use SilverStripe\Dev\TestOnly;
+use SilverStripe\ORM\DataObject;
+use SilverStripe\Security\Permission;
 use SilverStripe\Security\PermissionProvider;
 
 class RestfulServerTestSecretThing extends DataObject implements TestOnly, PermissionProvider

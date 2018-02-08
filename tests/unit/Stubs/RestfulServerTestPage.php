@@ -2,10 +2,8 @@
 
 namespace SilverStripe\RestfulServer\Tests\Stubs;
 
-use SilverStripe\RestfulServer\Tests\Stubs\RestfulServerTestAuthor;
-use SilverStripe\RestfulServer\Tests\Stubs\RestfulServerTestComment;
-use SilverStripe\ORM\DataObject;
 use SilverStripe\Dev\TestOnly;
+use SilverStripe\ORM\DataObject;
 
 class RestfulServerTestPage extends DataObject implements TestOnly
 {
