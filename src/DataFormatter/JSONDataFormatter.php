@@ -22,6 +22,9 @@ class JSONDataFormatter extends DataFormatter
 
     protected $outputContentType = 'application/json';
 
+    /**
+     * @return array
+     */
     public function supportedExtensions()
     {
         return array(
@@ -30,12 +33,24 @@ class JSONDataFormatter extends DataFormatter
         );
     }
 
+    /**
+     * @return array
+     */
     public function supportedMimeTypes()
     {
         return array(
             'application/json',
             'text/x-json'
         );
+    }
+
+    /**
+     * @param $array
+     * @return string
+     */
+    public function convertArray($array)
+    {
+        return Convert::array2json($array);
     }
 
     /**
@@ -163,6 +178,10 @@ class JSONDataFormatter extends DataFormatter
         return Convert::array2json($serobj);
     }
 
+    /**
+     * @param string $strData
+     * @return array|bool|void
+     */
     public function convertStringToArray($strData)
     {
         return Convert::json2array($strData);

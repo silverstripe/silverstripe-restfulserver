@@ -10,6 +10,8 @@ use SilverStripe\ORM\DataObject;
 use SilverStripe\Control\Director;
 use SilverStripe\Control\HTTPRequest;
 use SilverStripe\ORM\SS_List;
+use SilverStripe\ORM\ValidationException;
+use SilverStripe\ORM\ValidationResult;
 use SilverStripe\Security\Member;
 use SilverStripe\Security\Security;
 use SilverStripe\CMS\Model\SiteTree;
@@ -443,8 +445,13 @@ class RestfulServer extends Controller
             return $this->unsupportedMediaType();
         }
 
-        /** @var DataObject|string */
-        $obj = $this->updateDataObject($obj, $reqFormatter);
+        try {
+            /** @var DataObject|string */
+            $obj = $this->updateDataObject($obj, $reqFormatter);
+        } catch (ValidationException $e) {
+            return $this->validationFailure($responseFormatter, $e->getResult());
+        }
+
         if (is_string($obj)) {
             return $obj;
         }
@@ -515,8 +522,13 @@ class RestfulServer extends Controller
 
         $responseFormatter = $this->getResponseDataFormatter($className);
 
-        /** @var DataObject|string $obj */
-        $obj = $this->updateDataObject($obj, $reqFormatter);
+        try {
+            /** @var DataObject|string $obj */
+            $obj = $this->updateDataObject($obj, $reqFormatter);
+        } catch (ValidationException $e) {
+            return $this->validationFailure($responseFormatter, $e->getResult());
+        }
+
         if (is_string($obj)) {
             return $obj;
         }
@@ -643,6 +655,9 @@ class RestfulServer extends Controller
         }
     }
 
+    /**
+     * @return string
+     */
     protected function permissionFailure()
     {
         // return a 401
@@ -652,6 +667,9 @@ class RestfulServer extends Controller
         return "You don't have access to this item through the API.";
     }
 
+    /**
+     * @return string
+     */
     protected function notFound()
     {
         // return a 404
@@ -660,6 +678,9 @@ class RestfulServer extends Controller
         return "That object wasn't found";
     }
 
+    /**
+     * @return string
+     */
     protected function methodNotAllowed()
     {
         $this->getResponse()->setStatusCode(405);
@@ -667,11 +688,31 @@ class RestfulServer extends Controller
         return "Method Not Allowed";
     }
 
+    /**
+     * @return string
+     */
     protected function unsupportedMediaType()
     {
         $this->response->setStatusCode(415); // Unsupported Media Type
         $this->getResponse()->addHeader('Content-Type', 'text/plain');
         return "Unsupported Media Type";
+    }
+
+    /**
+     * @param ValidationResult $result
+     * @return mixed
+     */
+    protected function validationFailure(DataFormatter $responseFormatter, ValidationResult $result)
+    {
+        $this->getResponse()->setStatusCode(400);
+        $this->getResponse()->addHeader('Content-Type', $responseFormatter->getOutputContentType());
+
+        $response = [
+            'type' => ValidationException::class,
+            'messages' => $result->getMessages(),
+        ];
+
+        return $responseFormatter->convertArray($response);
     }
 
     /**

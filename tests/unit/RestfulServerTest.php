@@ -10,6 +10,7 @@ use SilverStripe\RestfulServer\Tests\Stubs\RestfulServerTestAuthorRating;
 use SilverStripe\Control\Director;
 use SilverStripe\Core\Convert;
 use SilverStripe\Control\Controller;
+use SilverStripe\RestfulServer\Tests\Stubs\RestfulServerTestValidationFailure;
 use SilverStripe\Security\Member;
 use SilverStripe\Security\Security;
 use SilverStripe\ORM\DataObject;
@@ -571,5 +572,18 @@ class RestfulServerTest extends SapphireTest
         $this->assertEquals(1, $responseArray['@attributes']['totalSize']);
         unset($_SERVER['PHP_AUTH_USER']);
         unset($_SERVER['PHP_AUTH_PW']);
+    }
+
+    public function testValidationErrorWithPOST()
+    {
+        $urlSafeClassname = $this->urlSafeClassname(RestfulServerTestValidationFailure::class);
+        $url = "{$this->baseURI}/api/v1/$urlSafeClassname/";
+        $data = [
+            'Content' => 'Test',
+        ];
+        $response = Director::test($url, $data, null, 'POST');
+        // Assumption: XML is default output
+        $responseArr = Convert::xml2array($response->getBody());
+        $this->assertEquals('SilverStripe\\ORM\\ValidationException', $responseArr['type']);
     }
 }
