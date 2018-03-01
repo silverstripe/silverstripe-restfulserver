@@ -4,6 +4,7 @@ namespace SilverStripe\RestfulServer\DataFormatter;
 
 use SilverStripe\Control\Controller;
 use SilverStripe\Core\Convert;
+use SilverStripe\Dev\Debug;
 use SilverStripe\RestfulServer\DataFormatter;
 use SilverStripe\ORM\DataObject;
 use SilverStripe\ORM\DataObjectInterface;
@@ -24,6 +25,9 @@ class XMLDataFormatter extends DataFormatter
 
     protected $outputContentType = 'text/xml';
 
+    /**
+     * @return array
+     */
     public function supportedExtensions()
     {
         return array(
@@ -31,12 +35,57 @@ class XMLDataFormatter extends DataFormatter
         );
     }
 
+    /**
+     * @return array
+     */
     public function supportedMimeTypes()
     {
         return array(
             'text/xml',
             'application/xml',
         );
+    }
+
+    /**
+     * @param $array
+     * @return string
+     * @throws \Exception
+     */
+    public function convertArray($array)
+    {
+        $response = Controller::curr()->getResponse();
+        if ($response) {
+            $response->addHeader("Content-Type", "text/xml");
+        }
+
+        return "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n
+            <response>{$this->convertArrayWithoutHeader($array)}</response>";
+    }
+
+    /**
+     * @param $array
+     * @return string
+     * @throws \Exception
+     */
+    public function convertArrayWithoutHeader($array)
+    {
+        $xml = '';
+
+        foreach ($array as $fieldName => $fieldValue) {
+            if (is_array($fieldValue)) {
+                if (is_numeric($fieldName)) {
+                    $fieldName = 'Item';
+                }
+
+                $xml .= "<{$fieldName}>\n";
+                $xml .= $this->convertArrayWithoutHeader($fieldValue);
+                $xml .= "</{$fieldName}>\n";
+            } else {
+                $xml .= "<$fieldName>$fieldValue</$fieldName>\n";
+            }
+        }
+
+        return $xml;
     }
 
     /**
@@ -56,6 +105,12 @@ class XMLDataFormatter extends DataFormatter
         return "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" . $this->convertDataObjectWithoutHeader($obj, $fields);
     }
 
+    /**
+     * @param DataObject $obj
+     * @param null $fields
+     * @param null $relations
+     * @return string
+     */
     public function convertDataObjectWithoutHeader(DataObject $obj, $fields = null, $relations = null)
     {
         $className = $this->sanitiseClassName(get_class($obj));
@@ -195,6 +250,11 @@ class XMLDataFormatter extends DataFormatter
         return $xml;
     }
 
+    /**
+     * @param string $strData
+     * @return array|void
+     * @throws \Exception
+     */
     public function convertStringToArray($strData)
     {
         return Convert::xml2array($strData);

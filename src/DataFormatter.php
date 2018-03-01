@@ -260,6 +260,9 @@ abstract class DataFormatter
         return $this->removeFields;
     }
 
+    /**
+     * @return string
+     */
     public function getOutputContentType()
     {
         return $this->outputContentType;
@@ -340,14 +343,28 @@ abstract class DataFormatter
     abstract public function supportedMimeTypes();
 
     /**
-     * Convert a single data object to this format.  Return a string.
+     * Convert a single data object to this format. Return a string.
+     *
+     * @param DataObjectInterface $do
+     * @return mixed
      */
     abstract public function convertDataObject(DataObjectInterface $do);
 
     /**
-     * Convert a data object set to this format.  Return a string.
+     * Convert a data object set to this format. Return a string.
+     *
+     * @param SS_List $set
+     * @return string
      */
     abstract public function convertDataObjectSet(SS_List $set);
+
+    /**
+     * Convert an array to this format. Return a string.
+     *
+     * @param $array
+     * @return string
+     */
+    abstract public function convertArray($array);
 
     /**
      * @param string $strData HTTP Payload as string
