@@ -13,6 +13,7 @@ use SilverStripe\ORM\SS_List;
 use SilverStripe\Security\Member;
 use SilverStripe\Security\Security;
 use SilverStripe\CMS\Model\SiteTree;
+use TractorCow\Fluent\Task\ConvertTranslatableTask\Exception;
 
 /**
  * Generic RESTful server, which handles webservice access to arbitrary DataObjects.
@@ -257,7 +258,8 @@ class RestfulServer extends Controller
         $this->getResponse()->addHeader('Content-Type', $responseFormatter->getOutputContentType());
 
         $rawFields = $this->request->getVar('fields');
-        $fields = $rawFields ? explode(',', $rawFields) : null;
+        $realFields = $responseFormatter->getRealFields($className, explode(',', $rawFields));
+        $fields = $rawFields ? $realFields : null;
 
         if ($obj instanceof SS_List) {
             $objs = ArrayList::create($obj->toArray());
@@ -345,10 +347,12 @@ class RestfulServer extends Controller
 
         // set custom fields
         if ($customAddFields = $this->request->getVar('add_fields')) {
-            $formatter->setCustomAddFields(explode(',', $customAddFields));
+            $customAddFields = $formatter->getRealFields($className, explode(',', $customAddFields));
+            $formatter->setCustomAddFields($customAddFields);
         }
         if ($customFields = $this->request->getVar('fields')) {
-            $formatter->setCustomFields(explode(',', $customFields));
+            $customFields = $formatter->getRealFields($className, explode(',', $customFields));
+            $formatter->setCustomFields($customFields);
         }
         $formatter->setCustomRelations($this->getAllowedRelations($className));
 
@@ -488,6 +492,13 @@ class RestfulServer extends Controller
                 return $this->notFound();
             }
 
+            $reqFormatter = $this->getRequestDataFormatter($className);
+            if (!$reqFormatter) {
+                return $this->unsupportedMediaType();
+            }
+
+            $relation = $reqFormatter->getRealFieldName($className, $relation);
+
             if (!$obj->hasMethod($relation)) {
                 return $this->notFound();
             }
@@ -561,16 +572,23 @@ class RestfulServer extends Controller
         }
 
         if (!empty($body)) {
-            $data = $formatter->convertStringToArray($body);
+            $rawdata = $formatter->convertStringToArray($body);
         } else {
             // assume application/x-www-form-urlencoded which is automatically parsed by PHP
-            $data = $this->request->postVars();
+            $rawdata = $this->request->postVars();
+        }
+
+        $className = $this->unsanitiseClassName($this->request->param('ClassName'));
+        // update any aliased field names
+        $data = [];
+        foreach ($rawdata as $key => $value) {
+            $newkey = $formatter->getRealFieldName($className, $key);
+            $data[$newkey] = $value;
         }
 
         // @todo Disallow editing of certain keys in database
         $data = array_diff_key($data, ['ID', 'Created']);
 
-        $className = $this->unsanitiseClassName($this->request->param('ClassName'));
         $apiAccess = singleton($className)->config()->api_access;
         if (is_array($apiAccess) && isset($apiAccess['edit'])) {
             $data = array_intersect_key($data, array_combine($apiAccess['edit'], $apiAccess['edit']));
