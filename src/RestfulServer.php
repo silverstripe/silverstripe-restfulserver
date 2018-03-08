@@ -13,7 +13,6 @@ use SilverStripe\ORM\SS_List;
 use SilverStripe\Security\Member;
 use SilverStripe\Security\Security;
 use SilverStripe\CMS\Model\SiteTree;
-use TractorCow\Fluent\Task\ConvertTranslatableTask\Exception;
 
 /**
  * Generic RESTful server, which handles webservice access to arbitrary DataObjects.

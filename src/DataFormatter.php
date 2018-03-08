@@ -366,7 +366,7 @@ abstract class DataFormatter
      */
     public function getRealFields($className, $fields)
     {
-        $apiMapping = Config::inst()->get($className, 'api_field_mapping');
+        $apiMapping = $this->getApiMapping($className);
         if (is_array($apiMapping) && is_array($fields)) {
             $mappedFields = [];
             foreach ($fields as $field) {
