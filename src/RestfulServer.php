@@ -103,7 +103,7 @@ class RestfulServer extends Controller
      * @param string $classname
      * @return string 'escaped' class name
      */
-    protected function sanitiseClassName($className)
+    public static function sanitiseClassName($className)
     {
         return str_replace('\\', '-', $className);
     }
@@ -115,7 +115,7 @@ class RestfulServer extends Controller
      * @param string $classname
      * @return string syntactically valid classname
      */
-    protected function unsanitiseClassName($className)
+    public static function unsanitiseClassName($className)
     {
         return str_replace('-', '\\', $className);
     }
@@ -126,7 +126,7 @@ class RestfulServer extends Controller
      */
     public function index(HTTPRequest $request)
     {
-        $className = $this->unsanitiseClassName($request->param('ClassName'));
+        $className = static::unsanitiseClassName($request->param('ClassName'));
         $id = $request->param('ID') ?: null;
         $relation = $request->param('Relation') ?: null;
 
@@ -322,7 +322,7 @@ class RestfulServer extends Controller
         $accept = $this->request->getHeader('Accept');
         $mimetypes = $this->request->getAcceptMimetypes();
         if (!$className) {
-            $className = $this->unsanitiseClassName($this->request->param('ClassName'));
+            $className = static::unsanitiseClassName($this->request->param('ClassName'));
         }
 
         // get formatter
@@ -460,7 +460,7 @@ class RestfulServer extends Controller
             $type = ".{$types[0]}";
         }
 
-        $urlSafeClassName = $this->sanitiseClassName(get_class($obj));
+        $urlSafeClassName = static::sanitiseClassName(get_class($obj));
         $apiBase = $this->config()->api_base;
         $objHref = Director::absoluteURL($apiBase . "$urlSafeClassName/$obj->ID" . $type);
         $this->getResponse()->addHeader('Location', $objHref);
@@ -532,7 +532,7 @@ class RestfulServer extends Controller
             $type = ".{$types[0]}";
         }
 
-        $urlSafeClassName = $this->sanitiseClassName(get_class($obj));
+        $urlSafeClassName = static::sanitiseClassName(get_class($obj));
         $apiBase = $this->config()->api_base;
         $objHref = Director::absoluteURL($apiBase . "$urlSafeClassName/$obj->ID" . $type);
         $this->getResponse()->addHeader('Location', $objHref);
@@ -570,7 +570,7 @@ class RestfulServer extends Controller
         // @todo Disallow editing of certain keys in database
         $data = array_diff_key($data, ['ID', 'Created']);
 
-        $className = $this->unsanitiseClassName($this->request->param('ClassName'));
+        $className = static::unsanitiseClassName($this->request->param('ClassName'));
         $apiAccess = singleton($className)->config()->api_access;
         if (is_array($apiAccess) && isset($apiAccess['edit'])) {
             $data = array_intersect_key($data, array_combine($apiAccess['edit'], $apiAccess['edit']));
