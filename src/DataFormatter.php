@@ -373,4 +373,87 @@ abstract class DataFormatter
     {
         user_error('DataFormatter::convertStringToArray not implemented on subclass', E_USER_ERROR);
     }
+
+    /**
+     * Convert an array of aliased field names to their Dataobject field name
+     *
+     * @param string $className
+     * @param string[] $fields
+     * @return string[]
+     */
+    public function getRealFields($className, $fields)
+    {
+        $apiMapping = $this->getApiMapping($className);
+        if (is_array($apiMapping) && is_array($fields)) {
+            $mappedFields = [];
+            foreach ($fields as $field) {
+                $mappedFields[] = $this->getMappedKey($apiMapping, $field);
+            }
+            return $mappedFields;
+        }
+        return $fields;
+    }
+
+    /**
+     * Get the DataObject field name from its alias
+     *
+     * @param string $className
+     * @param string $field
+     * @return string
+     */
+    public function getRealFieldName($className, $field)
+    {
+        $apiMapping = $this->getApiMapping($className);
+        return $this->getMappedKey($apiMapping, $field);
+    }
+
+    /**
+     * Get a DataObject Field's Alias
+     * defaults to the fieldname
+     *
+     * @param string $className
+     * @param string $field
+     * @return string
+     */
+    public function getFieldAlias($className, $field)
+    {
+        $apiMapping = $this->getApiMapping($className);
+        $apiMapping = array_flip($apiMapping);
+        return $this->getMappedKey($apiMapping, $field);
+    }
+
+    /**
+     * Get the 'api_field_mapping' config value for a class
+     * or return an empty array
+     *
+     * @param string $className
+     * @return string[]|array
+     */
+    protected function getApiMapping($className)
+    {
+        $apiMapping = Config::inst()->get($className, 'api_field_mapping');
+        if ($apiMapping && is_array($apiMapping)) {
+            return $apiMapping;
+        }
+        return [];
+    }
+
+    /**
+     * Helper function to get mapped field names
+     *
+     * @param array $map
+     * @param string $key
+     * @return string
+     */
+    protected function getMappedKey($map, $key)
+    {
+        if (is_array($map)) {
+            if (array_key_exists($key, $map)) {
+                return $map[$key];
+            } else {
+                return $key;
+            }
+        }
+        return $key;
+    }
 }

@@ -89,7 +89,8 @@ class JSONDataFormatter extends DataFormatter
             }
 
             $fieldValue = $obj->obj($fieldName)->forTemplate();
-            $serobj->$fieldName = $fieldValue;
+            $mappedFieldName = $this->getFieldAlias($className, $fieldName);
+            $serobj->$mappedFieldName = $fieldValue;
         }
 
         if ($this->relationDepth > 0) {

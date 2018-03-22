@@ -137,7 +137,8 @@ class XMLDataFormatter extends DataFormatter
                 } else {
                     $fieldValue = Convert::raw2xml($fieldValue);
                 }
-                $xml .= "<$fieldName>$fieldValue</$fieldName>\n";
+                $mappedFieldName = $this->getFieldAlias(get_class($obj), $fieldName);
+                $xml .= "<$mappedFieldName>$fieldValue</$mappedFieldName>\n";
             }
         }
 

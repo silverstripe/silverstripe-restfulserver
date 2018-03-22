@@ -59,6 +59,44 @@ class Article extends DataObject {
 }
 ```
 
+Example DataObject field mapping, allows aliasing fields so that public requests and responses display different field names:
+
+```php
+namespace Vendor\Project;
+
+use SilverStripe\ORM\DataObject;
+
+class Article extends DataObject {
+
+    private static $db = [
+        'Title'=>'Text',
+        'Published'=>'Boolean'
+    ];
+
+    private static $api_access = [
+        'view' => ['Title', 'Content'],
+    ];
+
+    private static $api_field_mapping = [
+        'customTitle' => 'Title',
+    ];
+}
+```
+Given a dataobject with values:
+```yml
+    ID: 12
+    Title: Title Value
+    Content: Content value
+```
+which when requesting with the url `/api/v1/Vendor-Project-Article/12?fields=customTitle,Content` and `Accept: application/json` the response will look like:
+```Javascript
+{
+    "customTitle": "Title Value",
+    "Content": "Content value"
+}
+```
+Similarly, `PUT` or `POST` requests will have fields transformed from the alias name to the DB field name.
+
 ## Supported operations
 
  - `GET /api/v1/(ClassName)/(ID)` - gets a database record

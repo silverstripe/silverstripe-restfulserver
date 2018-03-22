@@ -17,6 +17,7 @@ use SilverStripe\ORM\DataObject;
 use SilverStripe\Dev\SapphireTest;
 use SilverStripe\RestfulServer\DataFormatter\JSONDataFormatter;
 use Page;
+use SilverStripe\Core\Config\Config;
 
 /**
  *
@@ -113,6 +114,18 @@ class RestfulServerTest extends SapphireTest
         unset($_SERVER['PHP_AUTH_PW']);
     }
 
+    public function testGETWithFieldAlias()
+    {
+        Config::inst()->set(RestfulServerTestAuthorRating::class, 'api_field_mapping', ['rate' => 'Rating']);
+        $rating1 = $this->objFromFixture(RestfulServerTestAuthorRating::class, 'rating1');
+
+        $urlSafeClassname = $this->urlSafeClassname(RestfulServerTestAuthorRating::class);
+        $url = "{$this->baseURI}/api/v1/$urlSafeClassname/" . $rating1->ID;
+        $response = Director::test($url, null, null, 'GET');
+        $responseArr = Convert::xml2array($response->getBody());
+        $this->assertEquals(3, $responseArr['rate']);
+    }
+
     public function testAuthenticatedPUT()
     {
         $comment1 = $this->objFromFixture(RestfulServerTestComment::class, 'comment1');
@@ -158,6 +171,28 @@ class RestfulServerTest extends SapphireTest
         );
         $this->assertContains($rating1->ID, $ratingIDs);
         $this->assertContains($rating2->ID, $ratingIDs);
+    }
+
+    public function testGETRelationshipsWithAlias()
+    {
+        // Alias do not currently work with Relationships
+        Config::inst()->set(RestfulServerTestAuthor::class, 'api_field_mapping', ['stars' => 'Ratings']);
+        $author1 = $this->objFromFixture(RestfulServerTestAuthor::class, 'author1');
+        $rating1 = $this->objFromFixture(RestfulServerTestAuthorRating::class, 'rating1');
+
+        // @todo should be set up by fixtures, doesn't work for some reason...
+        $author1->Ratings()->add($rating1);
+
+        $urlSafeClassname = $this->urlSafeClassname(RestfulServerTestAuthor::class);
+        $url = "{$this->baseURI}/api/v1/$urlSafeClassname/" . $author1->ID . '?add_fields=stars';
+        $response = Director::test($url, null, null, 'GET');
+        $this->assertEquals(200, $response->getStatusCode());
+
+        $responseArr = Convert::xml2array($response->getBody());
+        $xmlTagSafeClassName = $this->urlSafeClassname(RestfulServerTestAuthorRating::class);
+
+        $this->assertTrue(array_key_exists('Ratings', $responseArr));
+        $this->assertFalse(array_key_exists('stars', $responseArr));
     }
 
     public function testGETManyManyRelationshipsXML()
@@ -395,6 +430,17 @@ class RestfulServerTest extends SapphireTest
         $this->assertContains('<Rating>' . $rating1->Rating . '</Rating>', $response->getBody());
     }
 
+    public function testXMLValueFormattingWithFieldAlias()
+    {
+        Config::inst()->set(RestfulServerTestAuthorRating::class, 'api_field_mapping', ['rate' => 'Rating']);
+        $rating1 = $this->objFromFixture(RestfulServerTestAuthorRating::class, 'rating1');
+
+        $urlSafeClassname = $this->urlSafeClassname(RestfulServerTestAuthorRating::class);
+        $url = "{$this->baseURI}/api/v1/$urlSafeClassname/" . $rating1->ID;
+        $response = Director::test($url, null, null, 'GET');
+        $this->assertContains('<rate>' . $rating1->Rating . '</rate>', $response->getBody());
+    }
+
     public function testApiAccessFieldRestrictions()
     {
         $author1 = $this->objFromFixture(RestfulServerTestAuthor::class, 'author1');
@@ -500,6 +546,23 @@ class RestfulServerTest extends SapphireTest
         $this->assertNotEquals('haxx0red', $responseArr['WriteProtectedField']);
     }
 
+    public function testFieldAliasWithPUT()
+    {
+        Config::inst()->set(RestfulServerTestAuthorRating::class, 'api_field_mapping', ['rate' => 'Rating']);
+        $rating1 = $this->objFromFixture(RestfulServerTestAuthorRating::class, 'rating1');
+        $urlSafeClassname = $this->urlSafeClassname(RestfulServerTestAuthorRating::class);
+        $url = "{$this->baseURI}/api/v1/$urlSafeClassname/" . $rating1->ID;
+        // Test input with original fieldname
+        $data = array(
+            'Rating' => '42',
+        );
+        $response = Director::test($url, $data, null, 'PUT');
+        // Assumption: XML is default output
+        $responseArr = Convert::xml2array($response->getBody());
+        // should output with aliased name
+        $this->assertEquals(42, $responseArr['rate']);
+    }
+
     public function testJSONDataFormatter()
     {
         $formatter = new JSONDataFormatter();
@@ -527,6 +590,29 @@ class RestfulServerTest extends SapphireTest
         );
     }
 
+    public function testJSONDataFormatterWithFieldAlias()
+    {
+        Config::inst()->set(Member::class, 'api_field_mapping', ['MyName' => 'FirstName']);
+        $formatter = new JSONDataFormatter();
+        $editor = $this->objFromFixture(Member::class, 'editor');
+        $user = $this->objFromFixture(Member::class, 'user');
+
+        // The DataFormatter performs canView calls
+        // these are `Member`s so we need to be ADMIN types
+        $this->logInWithPermission('ADMIN');
+
+        $set = Member::get()
+            ->filter('ID', [$editor->ID, $user->ID])
+            ->sort('"Email" ASC'); // for sorting for postgres
+
+        $this->assertEquals(
+            '{"totalSize":null,"items":[{"MyName":"Editor","Email":"editor@test.com"},' .
+                '{"MyName":"User","Email":"user@test.com"}]}',
+            $formatter->convertDataObjectSet($set, ["FirstName", "Email"]),
+            "Correct JSON formatting with field alias"
+        );
+    }
+
     public function testApiAccessWithPOST()
     {
         $urlSafeClassname = $this->urlSafeClassname(RestfulServerTestAuthorRating::class);
@@ -540,6 +626,19 @@ class RestfulServerTest extends SapphireTest
         $responseArr = Convert::xml2array($response->getBody());
         $this->assertEquals(42, $responseArr['Rating']);
         $this->assertNotEquals('haxx0red', $responseArr['WriteProtectedField']);
+    }
+
+    public function testFieldAliasWithPOST()
+    {
+        Config::inst()->set(RestfulServerTestAuthorRating::class, 'api_field_mapping', ['rate' => 'Rating']);
+        $urlSafeClassname = $this->urlSafeClassname(RestfulServerTestAuthorRating::class);
+        $url = "{$this->baseURI}/api/v1/$urlSafeClassname/";
+        $data = [
+            'rate' => '42',
+        ];
+        $response = Director::test($url, $data, null, 'POST');
+        $responseArr = Convert::xml2array($response->getBody());
+        $this->assertEquals(42, $responseArr['rate']);
     }
 
     public function testCanViewRespectedInList()
