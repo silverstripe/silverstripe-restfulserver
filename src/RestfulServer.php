@@ -331,15 +331,15 @@ class RestfulServer extends Controller
         // get formatter
         if (!empty($extension)) {
             $formatter = DataFormatter::for_extension($extension);
-        } elseif ($includeAcceptHeader && !empty($accept) && $accept != '*/*') {
+        } elseif ($includeAcceptHeader && !empty($accept) && strpos($accept, '*/*') === false) {
             $formatter = DataFormatter::for_mimetypes($mimetypes);
             if (!$formatter) {
-                $formatter = DataFormatter::for_extension(self::$default_extension);
+                $formatter = DataFormatter::for_extension($this->config()->default_extension);
             }
         } elseif (!empty($contentType)) {
             $formatter = DataFormatter::for_mimetype($contentType);
         } else {
-            $formatter = DataFormatter::for_extension(self::$default_extension);
+            $formatter = DataFormatter::for_extension($this->config()->default_extension);
         }
 
         if (!$formatter) {
