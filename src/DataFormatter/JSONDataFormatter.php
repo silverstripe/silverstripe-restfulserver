@@ -108,11 +108,11 @@ class JSONDataFormatter extends DataFormatter
                 }
 
                 $fieldName = $relName . 'ID';
-                if ($obj->$fieldName) {
-                    $href = Director::absoluteURL($this->config()->api_base . "$relClass/" . $obj->$fieldName);
-                } else {
-                    $href = Director::absoluteURL($this->config()->api_base . "$className/$id/$relName");
-                }
+                $rel = $this->config()->api_base;
+                $rel .= $obj->$fieldName
+                    ? $this->sanitiseClassName($relClass) . '/' . $obj->$fieldName
+                    : $this->sanitiseClassName($className) . "/$id/$relName";
+                $href = Director::absoluteURL($rel);
                 $serobj->$relName = ArrayData::array_to_object(array(
                     "className" => $relClass,
                     "href" => "$href.json",
@@ -140,8 +140,8 @@ class JSONDataFormatter extends DataFormatter
                 $innerParts = array();
                 $items = $obj->$relName();
                 foreach ($items as $item) {
-                    //$href = Director::absoluteURL($this->config()->api_base . "$className/$id/$relName/$item->ID");
-                    $href = Director::absoluteURL($this->config()->api_base . "$relClass/$item->ID");
+                    $rel = $this->config()->api_base . $this->sanitiseClassName($relClass) . "/$item->ID";
+                    $href = Director::absoluteURL($rel);
                     $innerParts[] = ArrayData::array_to_object(array(
                         "className" => $relClass,
                         "href" => "$href.json",
