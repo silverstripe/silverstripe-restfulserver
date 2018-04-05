@@ -2,6 +2,7 @@
 
 namespace SilverStripe\RestfulServer\DataFormatter;
 
+use SilverStripe\RestfulServer\RestfulServer;
 use SilverStripe\View\ArrayData;
 use SilverStripe\Core\Convert;
 use SilverStripe\RestfulServer\DataFormatter;
@@ -124,6 +125,8 @@ class JSONDataFormatter extends DataFormatter
             }
 
             foreach ($obj->hasMany() + $obj->manyMany() as $relName => $relClass) {
+                $relClass = RestfulServer::parseRelationClass($relClass);
+
                 //remove dot notation from relation names
                 $parts = explode('.', $relClass);
                 $relClass = array_shift($parts);
