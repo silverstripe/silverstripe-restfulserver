@@ -123,6 +123,32 @@ class RestfulServer extends Controller
     }
 
     /**
+     * Parse many many relation class (works with through array syntax)
+     *
+     * @param string|array $class
+     * @return string|array
+     */
+    public static function parseRelationClass($class)
+    {
+        // detect many many through syntax
+        if (is_array($class)
+            && array_key_exists('through', $class)
+            && array_key_exists('to', $class)
+        ) {
+            $toRelation = $class['to'];
+
+            $hasOne = Config::inst()->get($class['through'], 'has_one');
+            if (empty($hasOne) || !is_array($hasOne) || !array_key_exists($toRelation, $hasOne)) {
+                return $class;
+            }
+
+            return $hasOne[$toRelation];
+        }
+
+        return $class;
+    }
+
+    /**
      * This handler acts as the switchboard for the controller.
      * Since no $Action url-param is set, all requests are sent here.
      */
@@ -802,6 +828,8 @@ class RestfulServer extends Controller
         $relations = (array)$obj->hasOne() + (array)$obj->hasMany() + (array)$obj->manyMany();
         if ($relations) {
             foreach ($relations as $relName => $relClass) {
+                $relClass = static::parseRelationClass($relClass);
+
                 //remove dot notation from relation names
                 $parts = explode('.', $relClass);
                 $relClass = array_shift($parts);
