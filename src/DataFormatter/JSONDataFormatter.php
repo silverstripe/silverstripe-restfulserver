@@ -143,7 +143,9 @@ class JSONDataFormatter extends DataFormatter
                 $innerParts = array();
                 $items = $obj->$relName();
                 foreach ($items as $item) {
-                    if (!$item->canView()) continue;
+                    if (!$item->canView()) {
+                        continue;
+                    }
                     $rel = $this->config()->api_base . $this->sanitiseClassName($relClass) . "/$item->ID";
                     $href = Director::absoluteURL($rel);
                     $innerParts[] = ArrayData::array_to_object(array(
