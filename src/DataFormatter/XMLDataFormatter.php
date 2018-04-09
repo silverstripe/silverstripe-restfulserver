@@ -10,6 +10,7 @@ use SilverStripe\ORM\DataObject;
 use SilverStripe\ORM\DataObjectInterface;
 use SilverStripe\Control\Director;
 use SilverStripe\ORM\SS_List;
+use SilverStripe\RestfulServer\RestfulServer;
 
 /**
  * Formats a DataObject's member fields into an XML string
@@ -196,6 +197,8 @@ class XMLDataFormatter extends DataFormatter
             }
 
             foreach ($obj->manyMany() as $relName => $relClass) {
+                $relClass = RestfulServer::parseRelationClass($relClass);
+
                 //remove dot notation from relation names
                 $parts = explode('.', $relClass);
                 $relClass = array_shift($parts);
