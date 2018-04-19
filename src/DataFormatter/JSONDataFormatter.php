@@ -9,6 +9,7 @@ use SilverStripe\RestfulServer\DataFormatter;
 use SilverStripe\ORM\DataObjectInterface;
 use SilverStripe\Control\Director;
 use SilverStripe\ORM\SS_List;
+use SilverStripe\ORM\FieldType;
 
 /**
  * Formats a DataObject's member fields into a JSON string
@@ -89,7 +90,7 @@ class JSONDataFormatter extends DataFormatter
                 continue;
             }
 
-            $fieldValue = $obj->obj($fieldName)->RAW();
+            $fieldValue = self::cast($obj->obj($fieldName));
             $mappedFieldName = $this->getFieldAlias($className, $fieldName);
             $serobj->$mappedFieldName = $fieldValue;
         }
@@ -120,7 +121,7 @@ class JSONDataFormatter extends DataFormatter
                 $serobj->$relName = ArrayData::array_to_object(array(
                     "className" => $relClass,
                     "href" => "$href.json",
-                    "id" => $obj->$fieldName
+                    "id" => self::cast($obj->obj($fieldName))
                 ));
             }
 
@@ -195,5 +196,20 @@ class JSONDataFormatter extends DataFormatter
     public function convertStringToArray($strData)
     {
         return Convert::json2array($strData);
+    }
+
+    public static function cast(FieldType\DBField $dbfield)
+    {
+        switch (true) {
+            case $dbfield instanceof FieldType\DBInt:
+                return (int)$dbfield->RAW();
+            case $dbfield instanceof FieldType\DBFloat:
+                return (float)$dbfield->RAW();
+            case $dbfield instanceof FieldType\DBBoolean:
+                return (bool)$dbfield->RAW();
+            case is_null($dbfield->RAW()):
+                return null;
+        }
+        return $dbfield->RAW();
     }
 }
