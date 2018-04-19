@@ -40,7 +40,7 @@ class JSONDataFormatterTest extends SapphireTest
         $this->assertContains('"Name":null', $json, 'Empty string is null');
         $this->assertContains('"Active":false', $json, 'Empty boolean is false');
         $this->assertContains('"Sort":0', $json, 'Empty integer is 0');
-        $this->assertContains('"Average":null', $json, 'Empty float is null');
+        $this->assertContains('"Average":0', $json, 'Empty float is 0');
         $this->assertRegexp('/"ParentID":\d+/', $json, 'FK casted to integer');
     }
 }

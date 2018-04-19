@@ -194,7 +194,6 @@ class JSONDataFormatter extends DataFormatter
 
     public static function cast(FieldType\DBField $dbfield)
     {
-        if (is_null($dbfield->RAW())) return null;
         switch (true) {
             case $dbfield instanceof FieldType\DBInt:
                 return (int)$dbfield->RAW();
@@ -202,6 +201,8 @@ class JSONDataFormatter extends DataFormatter
                 return (float)$dbfield->RAW();
             case $dbfield instanceof FieldType\DBBoolean:
                 return (bool)$dbfield->RAW();
+            case is_null($dbfield->RAW()):
+                return null;
         }
         return $dbfield->RAW();
     }
