@@ -28,7 +28,7 @@ class JSONDataFormatterTest extends SapphireTest
         $parent = $this->objFromFixture(JSONDataFormatterTypeTestObject::class, 'parent');
         $json = $formatter->convertDataObject($parent);
         $this->assertRegexp('/"ID":\d+/', $json, 'PK casted to integer');
-        $this->assertRegexp('/"Created":"\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}"/', $json, 'Datetime casted to ISO string');
+        $this->assertRegexp('/"Created":"\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}"/', $json, 'Datetime casted to string');
         $this->assertContains('"Name":"Parent"', $json, 'String casted to string');
         $this->assertContains('"Active":true', $json, 'Boolean casted to boolean');
         $this->assertContains('"Sort":17', $json, 'Integer casted to integer');
