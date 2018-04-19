@@ -196,9 +196,12 @@ class JSONDataFormatter extends DataFormatter
     {
         if (is_null($dbfield->RAW())) return null;
         switch (true) {
-            case $dbfield instanceof FieldType\DBInt: return (int)$dbfield->RAW();
-            case $dbfield instanceof FieldType\DBFloat: return (float)$dbfield->RAW();
-            case $dbfield instanceof FieldType\DBBoolean: return (bool)$dbfield->RAW();
+            case $dbfield instanceof FieldType\DBInt:
+                return (int)$dbfield->RAW();
+            case $dbfield instanceof FieldType\DBFloat:
+                return (float)$dbfield->RAW();
+            case $dbfield instanceof FieldType\DBBoolean:
+                return (bool)$dbfield->RAW();
         }
         return $dbfield->RAW();
     }
