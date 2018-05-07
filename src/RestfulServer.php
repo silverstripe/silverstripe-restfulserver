@@ -489,7 +489,7 @@ class RestfulServer extends Controller
             return $obj;
         }
 
-        $this->getResponse()->setStatusCode(303); // See Other
+        $this->getResponse()->setStatusCode(202); // Accepted
         $this->getResponse()->addHeader('Content-Type', $responseFormatter->getOutputContentType());
 
         // Append the default extension for the output format to the Location header
