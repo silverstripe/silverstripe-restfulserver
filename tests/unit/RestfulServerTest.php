@@ -144,7 +144,7 @@ class RestfulServerTest extends SapphireTest
         $_SERVER['PHP_AUTH_USER'] = 'editor@test.com';
         $_SERVER['PHP_AUTH_PW'] = 'editor';
         $response = Director::test($url, $data, null, 'PUT');
-        $this->assertEquals(200, $response->getStatusCode()); // Success
+        $this->assertEquals(202, $response->getStatusCode()); // Accepted
 
         unset($_SERVER['PHP_AUTH_USER']);
         unset($_SERVER['PHP_AUTH_PW']);
@@ -237,7 +237,7 @@ class RestfulServerTest extends SapphireTest
             'Content-Type' => 'application/x-www-form-urlencoded'
         );
         $response = Director::test($url, null, null, 'PUT', $body, $headers);
-        $this->assertEquals(200, $response->getStatusCode()); // Success
+        $this->assertEquals(202, $response->getStatusCode()); // Accepted
         // Assumption: XML is default output
         $responseArr = Convert::xml2array($response->getBody());
         $this->assertEquals($comment1->ID, $responseArr['ID']);
@@ -306,7 +306,7 @@ class RestfulServerTest extends SapphireTest
             'Content-Type'=>'application/json',
             'Accept' => 'application/json'
         ));
-        $this->assertEquals(200, $response->getStatusCode()); // Updated
+        $this->assertEquals(202, $response->getStatusCode()); // Accepted
         $obj = Convert::json2obj($response->getBody());
         $this->assertEquals($comment1->ID, $obj->ID);
         $this->assertEquals('updated', $obj->Comment);
@@ -316,7 +316,7 @@ class RestfulServerTest extends SapphireTest
         $url = "{$this->baseURI}/api/v1/$urlSafeClassname/{$comment1->ID}.json";
         $body = '{"Comment":"updated"}';
         $response = Director::test($url, null, null, 'PUT', $body);
-        $this->assertEquals(200, $response->getStatusCode()); // Updated
+        $this->assertEquals(202, $response->getStatusCode()); // Accepted
         $this->assertEquals($url, $response->getHeader('Location'));
         $obj = Convert::json2obj($response->getBody());
         $this->assertEquals($comment1->ID, $obj->ID);
@@ -338,7 +338,7 @@ class RestfulServerTest extends SapphireTest
         $url = "{$this->baseURI}/api/v1/$urlSafeClassname/" . $comment1->ID;
         $body = '<RestfulServerTestComment><Comment>updated</Comment></RestfulServerTestComment>';
         $response = Director::test($url, null, null, 'PUT', $body, array('Content-Type'=>'text/xml'));
-        $this->assertEquals(200, $response->getStatusCode()); // Updated
+        $this->assertEquals(202, $response->getStatusCode()); // Accepted
         $obj = Convert::xml2array($response->getBody());
         $this->assertEquals($comment1->ID, $obj['ID']);
         $this->assertEquals('updated', $obj['Comment']);
@@ -348,7 +348,7 @@ class RestfulServerTest extends SapphireTest
         $url = "{$this->baseURI}/api/v1/$urlSafeClassname/{$comment1->ID}.xml";
         $body = '<RestfulServerTestComment><Comment>updated</Comment></RestfulServerTestComment>';
         $response = Director::test($url, null, null, 'PUT', $body);
-        $this->assertEquals(200, $response->getStatusCode()); // Updated
+        $this->assertEquals(202, $response->getStatusCode()); // Accepted
         $this->assertEquals($url, $response->getHeader('Location'));
         $obj = Convert::xml2array($response->getBody());
         $this->assertEquals($comment1->ID, $obj['ID']);
