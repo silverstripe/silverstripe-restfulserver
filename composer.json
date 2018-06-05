@@ -28,7 +28,11 @@
             "SilverStripe\\RestfulServer\\Tests\\": "tests"
         }
     },
-    "extra": [],
+    "extra": {
+        "branch-alias": {
+            "dev-master": "2.x-dev"
+        }
+    },
     "prefer-stable": true,
     "minimum-stability": "dev"
 }

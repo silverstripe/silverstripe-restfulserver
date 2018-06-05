@@ -2,12 +2,14 @@
 
 namespace SilverStripe\RestfulServer\DataFormatter;
 
+use SilverStripe\RestfulServer\RestfulServer;
 use SilverStripe\View\ArrayData;
 use SilverStripe\Core\Convert;
 use SilverStripe\RestfulServer\DataFormatter;
 use SilverStripe\ORM\DataObjectInterface;
 use SilverStripe\Control\Director;
 use SilverStripe\ORM\SS_List;
+use SilverStripe\ORM\FieldType;
 
 /**
  * Formats a DataObject's member fields into a JSON string
@@ -88,7 +90,7 @@ class JSONDataFormatter extends DataFormatter
                 continue;
             }
 
-            $fieldValue = $obj->obj($fieldName)->forTemplate();
+            $fieldValue = self::cast($obj->obj($fieldName));
             $mappedFieldName = $this->getFieldAlias($className, $fieldName);
             $serobj->$mappedFieldName = $fieldValue;
         }
@@ -119,11 +121,13 @@ class JSONDataFormatter extends DataFormatter
                 $serobj->$relName = ArrayData::array_to_object(array(
                     "className" => $relClass,
                     "href" => "$href.json",
-                    "id" => $obj->$fieldName
+                    "id" => self::cast($obj->obj($fieldName))
                 ));
             }
 
             foreach ($obj->hasMany() + $obj->manyMany() as $relName => $relClass) {
+                $relClass = RestfulServer::parseRelationClass($relClass);
+
                 //remove dot notation from relation names
                 $parts = explode('.', $relClass);
                 $relClass = array_shift($parts);
@@ -192,5 +196,20 @@ class JSONDataFormatter extends DataFormatter
     public function convertStringToArray($strData)
     {
         return Convert::json2array($strData);
+    }
+
+    public static function cast(FieldType\DBField $dbfield)
+    {
+        switch (true) {
+            case $dbfield instanceof FieldType\DBInt:
+                return (int)$dbfield->RAW();
+            case $dbfield instanceof FieldType\DBFloat:
+                return (float)$dbfield->RAW();
+            case $dbfield instanceof FieldType\DBBoolean:
+                return (bool)$dbfield->RAW();
+            case is_null($dbfield->RAW()):
+                return null;
+        }
+        return $dbfield->RAW();
     }
 }

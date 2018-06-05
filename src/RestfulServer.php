@@ -15,6 +15,7 @@ use SilverStripe\ORM\ValidationResult;
 use SilverStripe\Security\Member;
 use SilverStripe\Security\Security;
 use SilverStripe\CMS\Model\SiteTree;
+use SilverStripe\Core\Injector\Injector;
 
 /**
  * Generic RESTful server, which handles webservice access to arbitrary DataObjects.
@@ -41,6 +42,10 @@ use SilverStripe\CMS\Model\SiteTree;
  */
 class RestfulServer extends Controller
 {
+    /**
+     * @config
+     * @var array
+     */
     private static $url_handlers = array(
         '$ClassName!/$ID/$Relation' => 'handleAction',
         '' => 'notFound'
@@ -62,9 +67,23 @@ class RestfulServer extends Controller
      * If no extension is given in the request, resolve to this extension
      * (and subsequently the {@link self::$default_mimetype}.
      *
+     * @config
      * @var string
      */
     private static $default_extension = "xml";
+
+    /**
+     * Whether or not to send an additional "Location" header for POST requests
+     * to satisfy HTTP 1.1: https://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html
+     *
+     * Note: With this enabled (the default), no POST request for resource creation
+     * will return an HTTP 201. Because of the addition of the "Location" header,
+     * all responses become a straight HTTP 200.
+     *
+     * @config
+     * @var boolean
+     */
+    private static $location_header_on_create = true;
 
     /**
      * If no extension is given, resolve the request to this mimetype.
@@ -123,6 +142,32 @@ class RestfulServer extends Controller
     }
 
     /**
+     * Parse many many relation class (works with through array syntax)
+     *
+     * @param string|array $class
+     * @return string|array
+     */
+    public static function parseRelationClass($class)
+    {
+        // detect many many through syntax
+        if (is_array($class)
+            && array_key_exists('through', $class)
+            && array_key_exists('to', $class)
+        ) {
+            $toRelation = $class['to'];
+
+            $hasOne = Config::inst()->get($class['through'], 'has_one');
+            if (empty($hasOne) || !is_array($hasOne) || !array_key_exists($toRelation, $hasOne)) {
+                return $class;
+            }
+
+            return $hasOne[$toRelation];
+        }
+
+        return $class;
+    }
+
+    /**
      * This handler acts as the switchboard for the controller.
      * Since no $Action url-param is set, all requests are sent here.
      */
@@ -154,21 +199,25 @@ class RestfulServer extends Controller
         // authenticate through HTTP BasicAuth
         $this->member = $this->authenticate();
 
-        // handle different HTTP verbs
-        if ($this->request->isGET() || $this->request->isHEAD()) {
-            return $this->getHandler($className, $id, $relation);
-        }
+        try {
+            // handle different HTTP verbs
+            if ($this->request->isGET() || $this->request->isHEAD()) {
+                return $this->getHandler($className, $id, $relation);
+            }
 
-        if ($this->request->isPOST()) {
-            return $this->postHandler($className, $id, $relation);
-        }
+            if ($this->request->isPOST()) {
+                return $this->postHandler($className, $id, $relation);
+            }
 
-        if ($this->request->isPUT()) {
-            return $this->putHandler($className, $id, $relation);
-        }
+            if ($this->request->isPUT()) {
+                return $this->putHandler($className, $id, $relation);
+            }
 
-        if ($this->request->isDELETE()) {
-            return $this->deleteHandler($className, $id, $relation);
+            if ($this->request->isDELETE()) {
+                return $this->deleteHandler($className, $id, $relation);
+            }
+        } catch (\Exception $e) {
+            return $this->exceptionThrown($this->getRequestDataFormatter($className), $e);
         }
 
         // if no HTTP verb matches, return error
@@ -459,7 +508,7 @@ class RestfulServer extends Controller
             return $obj;
         }
 
-        $this->getResponse()->setStatusCode(200); // Success
+        $this->getResponse()->setStatusCode(202); // Accepted
         $this->getResponse()->addHeader('Content-Type', $responseFormatter->getOutputContentType());
 
         // Append the default extension for the output format to the Location header
@@ -523,7 +572,8 @@ class RestfulServer extends Controller
         if (!singleton($className)->canCreate($this->getMember())) {
             return $this->permissionFailure();
         }
-        $obj = new $className();
+
+        $obj = Injector::inst()->create($className);
 
         $reqFormatter = $this->getRequestDataFormatter($className);
         if (!$reqFormatter) {
@@ -554,10 +604,15 @@ class RestfulServer extends Controller
             $type = ".{$types[0]}";
         }
 
-        $urlSafeClassName = $this->sanitiseClassName(get_class($obj));
-        $apiBase = $this->config()->api_base;
-        $objHref = Director::absoluteURL($apiBase . "$urlSafeClassName/$obj->ID" . $type);
-        $this->getResponse()->addHeader('Location', $objHref);
+        // Deviate slightly from the spec: Helps datamodel API access restrict
+        // to consulting just canCreate(), not canView() as a result of the additional
+        // "Location" header.
+        if ($this->config()->get('location_header_on_create')) {
+            $urlSafeClassName = $this->sanitiseClassName(get_class($obj));
+            $apiBase = $this->config()->api_base;
+            $objHref = Director::absoluteURL($apiBase . "$urlSafeClassName/$obj->ID" . $type);
+            $this->getResponse()->addHeader('Location', $objHref);
+        }
 
         return $responseFormatter->convertDataObject($obj);
     }
@@ -681,7 +736,11 @@ class RestfulServer extends Controller
         $this->getResponse()->setStatusCode(401);
         $this->getResponse()->addHeader('WWW-Authenticate', 'Basic realm="API Access"');
         $this->getResponse()->addHeader('Content-Type', 'text/plain');
-        return "You don't have access to this item through the API.";
+
+        $reponse = "You don't have access to this item through the API.";
+        $this->extend(__FUNCTION__, $reponse);
+
+        return $reponse;
     }
 
     /**
@@ -692,7 +751,11 @@ class RestfulServer extends Controller
         // return a 404
         $this->getResponse()->setStatusCode(404);
         $this->getResponse()->addHeader('Content-Type', 'text/plain');
-        return "That object wasn't found";
+
+        $reponse = "That object wasn't found";
+        $this->extend(__FUNCTION__, $reponse);
+
+        return $reponse;
     }
 
     /**
@@ -702,7 +765,11 @@ class RestfulServer extends Controller
     {
         $this->getResponse()->setStatusCode(405);
         $this->getResponse()->addHeader('Content-Type', 'text/plain');
-        return "Method Not Allowed";
+
+        $reponse = "Method Not Allowed";
+        $this->extend(__FUNCTION__, $reponse);
+
+        return $reponse;
     }
 
     /**
@@ -712,7 +779,11 @@ class RestfulServer extends Controller
     {
         $this->response->setStatusCode(415); // Unsupported Media Type
         $this->getResponse()->addHeader('Content-Type', 'text/plain');
-        return "Unsupported Media Type";
+
+        $reponse = "Unsupported Media Type";
+        $this->extend(__FUNCTION__, $reponse);
+
+        return $reponse;
     }
 
     /**
@@ -728,6 +799,28 @@ class RestfulServer extends Controller
             'type' => ValidationException::class,
             'messages' => $result->getMessages(),
         ];
+
+        $this->extend(__FUNCTION__, $response, $result);
+
+        return $responseFormatter->convertArray($response);
+    }
+
+    /**
+     * @param DataFormatter $responseFormatter
+     * @param \Exception $e
+     * @return string
+     */
+    protected function exceptionThrown(DataFormatter $responseFormatter, \Exception $e)
+    {
+        $this->getResponse()->setStatusCode(500);
+        $this->getResponse()->addHeader('Content-Type', $responseFormatter->getOutputContentType());
+
+        $response = [
+            'type' => get_class($e),
+            'message' => $e->getMessage(),
+        ];
+
+        $this->extend(__FUNCTION__, $response, $e);
 
         return $responseFormatter->convertArray($response);
     }
@@ -760,6 +853,8 @@ class RestfulServer extends Controller
         $relations = (array)$obj->hasOne() + (array)$obj->hasMany() + (array)$obj->manyMany();
         if ($relations) {
             foreach ($relations as $relName => $relClass) {
+                $relClass = static::parseRelationClass($relClass);
+
                 //remove dot notation from relation names
                 $parts = explode('.', $relClass);
                 $relClass = array_shift($parts);
