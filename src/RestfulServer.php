@@ -15,6 +15,7 @@ use SilverStripe\ORM\ValidationResult;
 use SilverStripe\Security\Member;
 use SilverStripe\Security\Security;
 use SilverStripe\CMS\Model\SiteTree;
+use SilverStripe\Core\Injector\Injector;
 
 /**
  * Generic RESTful server, which handles webservice access to arbitrary DataObjects.
@@ -523,7 +524,8 @@ class RestfulServer extends Controller
         if (!singleton($className)->canCreate($this->getMember())) {
             return $this->permissionFailure();
         }
-        $obj = new $className();
+
+        $obj = Injector::inst()->create($className);
 
         $reqFormatter = $this->getRequestDataFormatter($className);
         if (!$reqFormatter) {
