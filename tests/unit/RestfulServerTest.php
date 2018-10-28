@@ -307,7 +307,7 @@ class RestfulServerTest extends SapphireTest
             'Accept' => 'application/json'
         ));
         $this->assertEquals(202, $response->getStatusCode()); // Accepted
-        $obj = Convert::json2obj($response->getBody());
+        $obj = json_decode($response->getBody());
         $this->assertEquals($comment1->ID, $obj->ID);
         $this->assertEquals('updated', $obj->Comment);
 
@@ -318,7 +318,7 @@ class RestfulServerTest extends SapphireTest
         $response = Director::test($url, null, null, 'PUT', $body);
         $this->assertEquals(202, $response->getStatusCode()); // Accepted
         $this->assertEquals($url, $response->getHeader('Location'));
-        $obj = Convert::json2obj($response->getBody());
+        $obj = json_decode($response->getBody());
         $this->assertEquals($comment1->ID, $obj->ID);
         $this->assertEquals('updated', $obj->Comment);
 
@@ -368,7 +368,7 @@ class RestfulServerTest extends SapphireTest
         $headers = array('Accept' => 'application/json');
         $response = Director::test($url, null, null, 'GET', null, $headers);
         $this->assertEquals(200, $response->getStatusCode()); // Success
-        $obj = Convert::json2obj($response->getBody());
+        $obj = json_decode($response->getBody());
         $this->assertEquals($comment1->ID, $obj->ID);
         $this->assertEquals('application/json', $response->getHeader('Content-Type'));
     }
@@ -659,7 +659,7 @@ class RestfulServerTest extends SapphireTest
         $response = Director::test($url, null, null, 'GET');
         $this->assertEquals(200, $response->getStatusCode());
         $this->assertNotContains('Unspeakable', $response->getBody());
-        $responseArray = Convert::json2array($response->getBody());
+        $responseArray = json_decode($response->getBody(), true);
         $this->assertSame(0, $responseArray['totalSize']);
 
         // With authentication

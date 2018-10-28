@@ -52,7 +52,7 @@ class JSONDataFormatter extends DataFormatter
      */
     public function convertArray($array)
     {
-        return Convert::array2json($array);
+        return json_encode($array);
     }
 
     /**
@@ -65,7 +65,7 @@ class JSONDataFormatter extends DataFormatter
      */
     public function convertDataObject(DataObjectInterface $obj, $fields = null, $relations = null)
     {
-        return Convert::array2json($this->convertDataObjectToJSONObject($obj, $fields, $relations));
+        return json_encode($this->convertDataObjectToJSONObject($obj, $fields, $relations));
     }
 
     /**
@@ -186,7 +186,7 @@ class JSONDataFormatter extends DataFormatter
             "items" => $items
         ));
 
-        return Convert::array2json($serobj);
+        return json_encode($serobj);
     }
 
     /**
@@ -195,7 +195,7 @@ class JSONDataFormatter extends DataFormatter
      */
     public function convertStringToArray($strData)
     {
-        return Convert::json2array($strData);
+        return json_decode($strData, true);
     }
 
     public static function cast(FieldType\DBField $dbfield)
