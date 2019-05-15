@@ -108,9 +108,9 @@ Similarly, `PUT` or `POST` requests will have fields transformed from the alias 
  - `PUT /api/v1/(ClassName)/(ID)/(Relation)` - updates a relation, replacing the existing record(s) (NOT IMPLEMENTED YET)
  - `POST /api/v1/(ClassName)/(ID)/(Relation)` - updates a relation, appending to the existing record(s) (NOT IMPLEMENTED YET)
 
- - DELETE /api/v1/(ClassName)/(ID) - deletes a database record (NOT IMPLEMENTED YET)
- - DELETE /api/v1/(ClassName)/(ID)/(Relation)/(ForeignID) - remove the relationship between two database records, but don't actually delete the foreign object (NOT IMPLEMENTED YET)
- - POST /api/v1/(ClassName)/(ID)/(MethodName) - executes a method on the given object (e.g, publish)
+ - `DELETE /api/v1/(ClassName)/(ID)` - deletes a database record (NOT IMPLEMENTED YET)
+ - `DELETE /api/v1/(ClassName)/(ID)/(Relation)/(ForeignID)` - remove the relationship between two database records, but don't actually delete the foreign object (NOT IMPLEMENTED YET)
+ - `POST /api/v1/(ClassName)/(ID)/(MethodName)` - executes a method on the given object (e.g, publish)
 
 ## Search
 
