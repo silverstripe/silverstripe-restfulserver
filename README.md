@@ -7,8 +7,8 @@
 ## Overview
 
 This class gives your application a RESTful API.  All you have to do is set the `api_access` configuration option to `true`
-on the appropriate DataObjects.  You will need to ensure that all of your data manipulation and security is defined in
-your model layer (ie, the DataObject classes) and not in your Controllers.  This is the recommended design for SilverStripe
+on the appropriate `DataObject`.  You will need to ensure that all of your data manipulation and security is defined in
+your model layer (ie, the `DataObject` classes) and not in your Controllers.  This is the recommended design for SilverStripe
 applications.
 
 ## Requirements
@@ -19,7 +19,7 @@ For a SilverStripe 3.x compatible version of this module, please see the [1.0 br
 
 ## Configuration
 
-Example DataObject with simple API access, giving full access to all object properties and relations,
+Example `DataObject` with simple API access, giving full access to all object properties and relations,
 unless explicitly controlled through model permissions.
 
 ```php
@@ -38,7 +38,7 @@ class Article extends DataObject {
 }
 ```
 
-Example DataObject with advanced API access, limiting viewing and editing to Title attribute only:
+Example `DataObject` with advanced API access, limiting viewing and editing to the "Title" attribute only:
 
 ```php
 namespace Vendor\Project;
@@ -59,7 +59,7 @@ class Article extends DataObject {
 }
 ```
 
-Example DataObject field mapping, allows aliasing fields so that public requests and responses display different field names:
+Example `DataObject` field mapping, allows aliasing fields so that public requests and responses display different field names:
 
 ```php
 namespace Vendor\Project;
@@ -82,7 +82,66 @@ class Article extends DataObject {
     ];
 }
 ```
-Given a dataobject with values:
+
+Example `DataObject` `HasMany` and `ManyMany` field-display handling. Only available on `JSONDataFormatter`. Declaring a `getApiFields` method in your `DataObject` (or an `Extension` subclass) allows additional fields to be shown on those relations, in addition to "id", "className" and "href":
+
+```php
+namespace Vendor\Project;
+
+use SilverStripe\ORM\DataObject;
+
+class Article extends DataObject {
+
+    private static $db = [
+        'Title'=>'Text',
+        'Published'=>'Boolean'
+    ];
+
+    private static $api_access = true;
+
+    /**
+     * @param  array $baseFields
+     * @return array
+     */
+    public function getApiFields($baseFields)
+    {
+        return [
+            'Title' => $this->Title,
+        ];
+    }
+}
+```
+
+Example `DataObject` `HasMany` and `ManyMany` field-display handling. Only available on `JSONDataFormatter`. Declaring a `getApiFields` method in your `DataObject` (or an `Extension` subclass) allows existing fields that the formatter returns (like "id", "className" and "href"), to be overloaded:
+
+```php
+namespace Vendor\Project;
+
+use SilverStripe\ORM\DataObject;
+
+class Article extends DataObject {
+
+    private static $db = [
+        'Title'=>'Text',
+        'Published'=>'Boolean'
+    ];
+
+    private static $api_access = true;
+
+    /**
+     * @param  array $baseFields
+     * @return array
+     */
+    public function getApiFields($baseFields)
+    {
+        return [
+            'href' => $this->myHrefOverrideMethod($baseFields['href']),
+        ];
+    }
+}
+```
+
+Given a `DataObject` with values:
 ```yml
     ID: 12
     Title: Title Value

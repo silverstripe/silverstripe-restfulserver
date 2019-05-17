@@ -10,6 +10,8 @@ use SilverStripe\ORM\DataObjectInterface;
 use SilverStripe\Control\Director;
 use SilverStripe\ORM\SS_List;
 use SilverStripe\ORM\FieldType;
+use SilverStripe\Core\ClassInfo;
+use SilverStripe\ORM\DataObject;
 
 /**
  * Formats a DataObject's member fields into a JSON string
@@ -118,10 +120,16 @@ class JSONDataFormatter extends DataFormatter
                     ? $this->sanitiseClassName($relClass) . '/' . $obj->$fieldName
                     : $this->sanitiseClassName($className) . "/$id/$relName";
                 $href = Director::absoluteURL($rel);
-                $serobj->$relName = ArrayData::array_to_object(array(
+                $component = $obj->getField($relName);
+                $baseFields = [
                     "className" => $relClass,
                     "href" => "$href.json",
-                    "id" => self::cast($obj->obj($fieldName))
+                    "id" => self::cast($obj->obj($fieldName)),
+                ];
+
+                $serobj->$relName = ArrayData::array_to_object(array_replace(
+                    $baseFields,
+                    ClassInfo::hasMethod($component, 'getApiFields') ? (array) $component->getApiFields($baseFields) : []
                 ));
             }
 
@@ -152,10 +160,14 @@ class JSONDataFormatter extends DataFormatter
                     }
                     $rel = $this->config()->api_base . $this->sanitiseClassName($relClass) . "/$item->ID";
                     $href = Director::absoluteURL($rel);
-                    $innerParts[] = ArrayData::array_to_object(array(
+                    $baseFields = [
                         "className" => $relClass,
                         "href" => "$href.json",
                         "id" => $item->ID
+                    ];
+                    $innerParts[] = ArrayData::array_to_object(array_replace(
+                        $baseFields,
+                        ClassInfo::hasMethod($item, 'getApiFields') ? (array) $item->getApiFields($baseFields) : []
                     ));
                 }
                 $serobj->$relName = $innerParts;
