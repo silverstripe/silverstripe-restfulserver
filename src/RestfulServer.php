@@ -2,20 +2,20 @@
 
 namespace SilverStripe\RestfulServer;
 
-use SilverStripe\ORM\ArrayList;
-use SilverStripe\Core\Config\Config;
+use SilverStripe\CMS\Model\SiteTree;
 use SilverStripe\Control\Controller;
-use SilverStripe\ORM\DataList;
-use SilverStripe\ORM\DataObject;
 use SilverStripe\Control\Director;
 use SilverStripe\Control\HTTPRequest;
+use SilverStripe\Core\Config\Config;
+use SilverStripe\Core\Injector\Injector;
+use SilverStripe\ORM\ArrayList;
+use SilverStripe\ORM\DataList;
+use SilverStripe\ORM\DataObject;
 use SilverStripe\ORM\SS_List;
 use SilverStripe\ORM\ValidationException;
 use SilverStripe\ORM\ValidationResult;
 use SilverStripe\Security\Member;
 use SilverStripe\Security\Security;
-use SilverStripe\CMS\Model\SiteTree;
-use SilverStripe\Core\Injector\Injector;
 
 /**
  * Generic RESTful server, which handles webservice access to arbitrary DataObjects.
@@ -205,23 +205,29 @@ class RestfulServer extends Controller
      * @todo Access checking
      *
      * @param string $className
-     * @param Int $id
+     * @param int $id
      * @param string $relation
      * @return string The serialized representation of the requested object(s) - usually XML or JSON.
      */
     protected function getHandler($className, $id, $relationName)
     {
-        $sort = '';
+        $sort = ['ID' => 'ASC'];
 
-        if ($this->request->getVar('sort')) {
-            $dir = $this->request->getVar('dir');
-            $sort = array($this->request->getVar('sort') => ($dir ? $dir : 'ASC'));
+        if ($sortQuery = $this->request->getVar('sort')) {
+            /** @var DataObject $singleton */
+            $singleton = singleton($className);
+            // Only apply a sort filter if it is a valid field on the DataObject
+            if ($singleton && $singleton->hasDatabaseField($sortQuery)) {
+                $sort = [
+                    $sortQuery => $this->request->getVar('dir') === 'DESC' ? 'DESC' : 'ASC',
+                ];
+            }
         }
 
-        $limit = array(
-            'start' => $this->request->getVar('start'),
-            'limit' => $this->request->getVar('limit')
-        );
+        $limit = [
+            'start' => (int) $this->request->getVar('start'),
+            'limit' => (int) $this->request->getVar('limit'),
+        ];
 
         $params = $this->request->getVars();
 
