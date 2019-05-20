@@ -46,7 +46,7 @@ RestfulServerTest_Author:
    author2:
       FirstName: Author 2
    author3:
-      Firstname: Author 3
+      FirstName: Author 3
    author4:
       FirstName: Author 4
       RelatedAuthors: =>RestfulServerTest_Author.author2,=>RestfulServerTest_Author.author3
