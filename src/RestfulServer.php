@@ -319,6 +319,8 @@ class RestfulServer extends Controller
                 }
             }
             $responseFormatter->setTotalSize($objs->count());
+            $this->extend('updateRestfulGetHandler', $objs, $responseFormatter);
+
             return $responseFormatter->convertDataObjectSet($objs, $fields);
         }
 
@@ -326,6 +328,8 @@ class RestfulServer extends Controller
             $responseFormatter->setTotalSize(0);
             return $responseFormatter->convertDataObjectSet(new ArrayList(), $fields);
         }
+
+        $this->extend('updateRestfulGetHandler', $obj, $responseFormatter);
 
         return $responseFormatter->convertDataObject($obj, $fields);
     }
@@ -737,10 +741,10 @@ class RestfulServer extends Controller
         $this->getResponse()->addHeader('WWW-Authenticate', 'Basic realm="API Access"');
         $this->getResponse()->addHeader('Content-Type', 'text/plain');
 
-        $reponse = "You don't have access to this item through the API.";
-        $this->extend(__FUNCTION__, $reponse);
+        $response = "You don't have access to this item through the API.";
+        $this->extend(__FUNCTION__, $response);
 
-        return $reponse;
+        return $response;
     }
 
     /**
@@ -752,10 +756,10 @@ class RestfulServer extends Controller
         $this->getResponse()->setStatusCode(404);
         $this->getResponse()->addHeader('Content-Type', 'text/plain');
 
-        $reponse = "That object wasn't found";
-        $this->extend(__FUNCTION__, $reponse);
+        $response = "That object wasn't found";
+        $this->extend(__FUNCTION__, $response);
 
-        return $reponse;
+        return $response;
     }
 
     /**
@@ -766,10 +770,10 @@ class RestfulServer extends Controller
         $this->getResponse()->setStatusCode(405);
         $this->getResponse()->addHeader('Content-Type', 'text/plain');
 
-        $reponse = "Method Not Allowed";
-        $this->extend(__FUNCTION__, $reponse);
+        $response = "Method Not Allowed";
+        $this->extend(__FUNCTION__, $response);
 
-        return $reponse;
+        return $response;
     }
 
     /**
@@ -780,10 +784,10 @@ class RestfulServer extends Controller
         $this->response->setStatusCode(415); // Unsupported Media Type
         $this->getResponse()->addHeader('Content-Type', 'text/plain');
 
-        $reponse = "Unsupported Media Type";
-        $this->extend(__FUNCTION__, $reponse);
+        $response = "Unsupported Media Type";
+        $this->extend(__FUNCTION__, $response);
 
-        return $reponse;
+        return $response;
     }
 
     /**
