@@ -53,7 +53,7 @@ class RestfulServerTest extends SapphireTest
     {
         parent::setUp();
         Director::config()->set('alternate_base_url', $this->baseURI);
-        Security::setCurrentUser(null);
+        $this->logOut();
     }
 
     public function testApiAccess()
@@ -615,6 +615,49 @@ class RestfulServerTest extends SapphireTest
             $formatter->convertDataObjectSet($set, ["FirstName", "Email"]),
             "Correct JSON formatting with field alias"
         );
+    }
+
+    public function testGetWithSortDescending()
+    {
+        $urlSafeClassname = $this->urlSafeClassname(RestfulServerTestAuthor::class);
+        $url = "{$this->baseURI}/api/v1/{$urlSafeClassname}?sort=FirstName&dir=DESC&fields=FirstName";
+
+        $response = Director::test($url);
+        $results = Convert::xml2array($response->getBody());
+
+        $this->assertSame('Author 4', $results[$urlSafeClassname][0]['FirstName']);
+        $this->assertSame('Author 3', $results[$urlSafeClassname][1]['FirstName']);
+        $this->assertSame('Author 2', $results[$urlSafeClassname][2]['FirstName']);
+        $this->assertSame('Author 1', $results[$urlSafeClassname][3]['FirstName']);
+    }
+
+    public function testGetWithSortAscending()
+    {
+        $urlSafeClassname = $this->urlSafeClassname(RestfulServerTestAuthor::class);
+        $url = "{$this->baseURI}/api/v1/{$urlSafeClassname}?sort=FirstName&dir=ASC&fields=FirstName";
+
+        $response = Director::test($url);
+        $results = Convert::xml2array($response->getBody());
+
+        $this->assertSame('Author 1', $results[$urlSafeClassname][0]['FirstName']);
+        $this->assertSame('Author 2', $results[$urlSafeClassname][1]['FirstName']);
+        $this->assertSame('Author 3', $results[$urlSafeClassname][2]['FirstName']);
+        $this->assertSame('Author 4', $results[$urlSafeClassname][3]['FirstName']);
+    }
+
+    public function testGetSortsByIdWhenInvalidSortColumnIsProvided()
+    {
+        $urlSafeClassname = $this->urlSafeClassname(RestfulServerTestAuthor::class);
+        $url = "{$this->baseURI}/api/v1/{$urlSafeClassname}?sort=Surname&dir=DESC&fields=FirstName";
+
+        $response = Director::test($url);
+
+        $results = Convert::xml2array($response->getBody());
+
+        $this->assertSame('Author 1', $results[$urlSafeClassname][0]['FirstName']);
+        $this->assertSame('Author 2', $results[$urlSafeClassname][1]['FirstName']);
+        $this->assertSame('Author 3', $results[$urlSafeClassname][2]['FirstName']);
+        $this->assertSame('Author 4', $results[$urlSafeClassname][3]['FirstName']);
     }
 
     public function testApiAccessWithPOST()
