@@ -1,6 +1,6 @@
 <?php
 /**
- * 
+ *
  * @todo Test Relation getters
  * @todo Test filter and limit through GET params
  * @todo Test DELETE verb
@@ -22,28 +22,28 @@ class RestfulServerTest extends SapphireTest
     {
         $comment1 = $this->objFromFixture('RestfulServerTest_Comment', 'comment1');
         $page1 = $this->objFromFixture('RestfulServerTest_Page', 'page1');
-        
+
         // normal GET should succeed with $api_access enabled
         $url = "/api/v1/RestfulServerTest_Comment/" . $comment1->ID;
         $response = Director::test($url, null, null, 'GET');
         $this->assertEquals($response->getStatusCode(), 200);
-        
+
         $_SERVER['PHP_AUTH_USER'] = 'user@test.com';
         $_SERVER['PHP_AUTH_PW'] = 'user';
-        
+
         // even with logged in user a GET with $api_access disabled should fail
         $url = "/api/v1/RestfulServerTest_Page/" . $page1->ID;
         $response = Director::test($url, null, null, 'GET');
         $this->assertEquals($response->getStatusCode(), 401);
-        
+
         unset($_SERVER['PHP_AUTH_USER']);
         unset($_SERVER['PHP_AUTH_PW']);
     }
-    
+
     public function testApiAccessBoolean()
     {
         $comment1 = $this->objFromFixture('RestfulServerTest_Comment', 'comment1');
-        
+
         $url = "/api/v1/RestfulServerTest_Comment/" . $comment1->ID;
         $response = Director::test($url, null, null, 'GET');
         $this->assertContains('<ID>', $response->getBody());
@@ -52,7 +52,7 @@ class RestfulServerTest extends SapphireTest
         $this->assertContains('<Page', $response->getBody());
         $this->assertContains('<Author', $response->getBody());
     }
-    
+
     public function testAuthenticatedGET()
     {
         $thing1 = $this->objFromFixture('RestfulServerTest_SecretThing', 'thing1');
@@ -62,25 +62,25 @@ class RestfulServerTest extends SapphireTest
         $url = "/api/v1/RestfulServerTest_SecretThing/" . $thing1->ID;
         $response = Director::test($url, null, null, 'GET');
         $this->assertEquals($response->getStatusCode(), 401);
-        
+
         $_SERVER['PHP_AUTH_USER'] = 'user@test.com';
         $_SERVER['PHP_AUTH_PW'] = 'user';
-        
+
         $url = "/api/v1/RestfulServerTest_Comment/" . $comment1->ID;
         $response = Director::test($url, null, null, 'GET');
         $this->assertEquals($response->getStatusCode(), 200);
-        
+
         unset($_SERVER['PHP_AUTH_USER']);
         unset($_SERVER['PHP_AUTH_PW']);
     }
-    
+
     public function testAuthenticatedPUT()
     {
         $comment1 = $this->objFromFixture('RestfulServerTest_Comment', 'comment1');
-        
+
         $url = "/api/v1/RestfulServerTest_Comment/" . $comment1->ID;
         $data = array('Comment' => 'created');
-        
+
         $response = Director::test($url, $data, null, 'PUT');
         $this->assertEquals($response->getStatusCode(), 401); // Permission failure
 
@@ -92,21 +92,21 @@ class RestfulServerTest extends SapphireTest
         unset($_SERVER['PHP_AUTH_USER']);
         unset($_SERVER['PHP_AUTH_PW']);
     }
-    
+
     public function testGETRelationshipsXML()
     {
         $author1 = $this->objFromFixture('RestfulServerTest_Author', 'author1');
         $rating1 = $this->objFromFixture('RestfulServerTest_AuthorRating', 'rating1');
         $rating2 = $this->objFromFixture('RestfulServerTest_AuthorRating', 'rating2');
-        
+
         // @todo should be set up by fixtures, doesn't work for some reason...
         $author1->Ratings()->add($rating1);
         $author1->Ratings()->add($rating2);
-        
+
         $url = "/api/v1/RestfulServerTest_Author/" . $author1->ID;
         $response = Director::test($url, null, null, 'GET');
         $this->assertEquals($response->getStatusCode(), 200);
-    
+
         $responseArr = Convert::xml2array($response->getBody());
         $ratingsArr = $responseArr['Ratings']['RestfulServerTest_AuthorRating'];
         $this->assertEquals(count($ratingsArr), 2);
@@ -117,20 +117,20 @@ class RestfulServerTest extends SapphireTest
         $this->assertContains($rating1->ID, $ratingIDs);
         $this->assertContains($rating2->ID, $ratingIDs);
     }
-    
+
     public function testGETManyManyRelationshipsXML()
     {
         // author4 has related authors author2 and author3
         $author2 = $this->objFromFixture('RestfulServerTest_Author', 'author2');
         $author3 = $this->objFromFixture('RestfulServerTest_Author', 'author3');
         $author4 = $this->objFromFixture('RestfulServerTest_Author', 'author4');
-        
+
         $url = "/api/v1/RestfulServerTest_Author/" . $author4->ID . '/RelatedAuthors';
         $response = Director::test($url, null, null, 'GET');
         $this->assertEquals(200, $response->getStatusCode());
         $arr = Convert::xml2array($response->getBody());
         $authorsArr = $arr['RestfulServerTest_Author'];
-        
+
         $this->assertEquals(count($authorsArr), 2);
         $ratingIDs = array(
             (int)$authorsArr[0]['ID'],
@@ -143,10 +143,10 @@ class RestfulServerTest extends SapphireTest
     public function testPUTWithFormEncoded()
     {
         $comment1 = $this->objFromFixture('RestfulServerTest_Comment', 'comment1');
-        
+
         $_SERVER['PHP_AUTH_USER'] = 'editor@test.com';
         $_SERVER['PHP_AUTH_PW'] = 'editor';
-    
+
         $url = "/api/v1/RestfulServerTest_Comment/" . $comment1->ID;
         $body = 'Name=Updated Comment&Comment=updated';
         $headers = array(
@@ -159,18 +159,18 @@ class RestfulServerTest extends SapphireTest
         $this->assertEquals($responseArr['ID'], $comment1->ID);
         $this->assertEquals($responseArr['Comment'], 'updated');
         $this->assertEquals($responseArr['Name'], 'Updated Comment');
-    
+
         unset($_SERVER['PHP_AUTH_USER']);
         unset($_SERVER['PHP_AUTH_PW']);
     }
-    
+
     public function testPOSTWithFormEncoded()
     {
         $comment1 = $this->objFromFixture('RestfulServerTest_Comment', 'comment1');
-        
+
         $_SERVER['PHP_AUTH_USER'] = 'editor@test.com';
         $_SERVER['PHP_AUTH_PW'] = 'editor';
-    
+
         $url = "/api/v1/RestfulServerTest_Comment";
         $body = 'Name=New Comment&Comment=created';
         $headers = array(
@@ -221,7 +221,7 @@ class RestfulServerTest extends SapphireTest
         $obj = Convert::json2obj($response->getBody());
         $this->assertEquals($obj->ID, $comment1->ID);
         $this->assertEquals($obj->Comment, 'updated');
-    
+
         // by extension
         $url = sprintf("/api/v1/RestfulServerTest_Comment/%d.json", $comment1->ID);
         $body = '{"Comment":"updated"}';
@@ -234,18 +234,18 @@ class RestfulServerTest extends SapphireTest
         $obj = Convert::json2obj($response->getBody());
         $this->assertEquals($obj->ID, $comment1->ID);
         $this->assertEquals($obj->Comment, 'updated');
-        
+
         unset($_SERVER['PHP_AUTH_USER']);
         unset($_SERVER['PHP_AUTH_PW']);
     }
-    
+
     public function testPUTwithXML()
     {
         $comment1 = $this->objFromFixture('RestfulServerTest_Comment', 'comment1');
-        
+
         $_SERVER['PHP_AUTH_USER'] = 'editor@test.com';
         $_SERVER['PHP_AUTH_PW'] = 'editor';
-        
+
         // by mimetype
         $url = "/api/v1/RestfulServerTest_Comment/" . $comment1->ID;
         $body = '<RestfulServerTest_Comment><Comment>updated</Comment></RestfulServerTest_Comment>';
@@ -254,7 +254,7 @@ class RestfulServerTest extends SapphireTest
         $obj = Convert::xml2array($response->getBody());
         $this->assertEquals($obj['ID'], $comment1->ID);
         $this->assertEquals($obj['Comment'], 'updated');
-    
+
         // by extension
         $url = sprintf("/api/v1/RestfulServerTest_Comment/%d.xml", $comment1->ID);
         $body = '<RestfulServerTest_Comment><Comment>updated</Comment></RestfulServerTest_Comment>';
@@ -267,17 +267,17 @@ class RestfulServerTest extends SapphireTest
         $obj = Convert::xml2array($response->getBody());
         $this->assertEquals($obj['ID'], $comment1->ID);
         $this->assertEquals($obj['Comment'], 'updated');
-        
+
         unset($_SERVER['PHP_AUTH_USER']);
         unset($_SERVER['PHP_AUTH_PW']);
     }
-        
+
     public function testHTTPAcceptAndContentType()
     {
         $comment1 = $this->objFromFixture('RestfulServerTest_Comment', 'comment1');
-        
+
         $url = "/api/v1/RestfulServerTest_Comment/" . $comment1->ID;
-        
+
         $headers = array('Accept' => 'application/json');
         $response = Director::test($url, null, null, 'GET', null, $headers);
         $this->assertEquals($response->getStatusCode(), 200); // Success
@@ -285,68 +285,68 @@ class RestfulServerTest extends SapphireTest
         $this->assertEquals($obj->ID, $comment1->ID);
         $this->assertEquals($response->getHeader('Content-Type'), 'application/json');
     }
-    
+
     public function testNotFound()
     {
         $_SERVER['PHP_AUTH_USER'] = 'user@test.com';
         $_SERVER['PHP_AUTH_PW'] = 'user';
-        
+
         $url = "/api/v1/RestfulServerTest_Comment/99";
         $response = Director::test($url, null, null, 'GET');
         $this->assertEquals($response->getStatusCode(), 404);
-        
+
         unset($_SERVER['PHP_AUTH_USER']);
         unset($_SERVER['PHP_AUTH_PW']);
     }
-    
+
     public function testMethodNotAllowed()
     {
         $comment1 = $this->objFromFixture('RestfulServerTest_Comment', 'comment1');
-        
+
         $url = "/api/v1/RestfulServerTest_Comment/" . $comment1->ID;
         $response = Director::test($url, null, null, 'UNKNOWNHTTPMETHOD');
         $this->assertEquals($response->getStatusCode(), 405);
     }
-    
+
     public function testConflictOnExistingResourceWhenUsingPost()
     {
         $rating1 = $this->objFromFixture('RestfulServerTest_AuthorRating', 'rating1');
-        
+
         $url = "/api/v1/RestfulServerTest_AuthorRating/" . $rating1->ID;
         $response = Director::test($url, null, null, 'POST');
         $this->assertEquals($response->getStatusCode(), 409);
     }
-    
+
     public function testUnsupportedMediaType()
     {
         $_SERVER['PHP_AUTH_USER'] = 'user@test.com';
         $_SERVER['PHP_AUTH_PW'] = 'user';
-    
+
         $url = "/api/v1/RestfulServerTest_Comment";
         $data = "Comment||\/||updated"; // weird format
         $headers = array('Content-Type' => 'text/weirdformat');
         $response = Director::test($url, null, null, 'POST', $data, $headers);
         $this->assertEquals($response->getStatusCode(), 415);
-        
+
         unset($_SERVER['PHP_AUTH_USER']);
         unset($_SERVER['PHP_AUTH_PW']);
     }
-    
+
     public function testXMLValueFormatting()
     {
         $rating1 = $this->objFromFixture('RestfulServerTest_AuthorRating', 'rating1');
-        
+
         $url = "/api/v1/RestfulServerTest_AuthorRating/" . $rating1->ID;
         $response = Director::test($url, null, null, 'GET');
         $this->assertContains('<ID>' . $rating1->ID . '</ID>', $response->getBody());
         $this->assertContains('<Rating>' . $rating1->Rating . '</Rating>', $response->getBody());
     }
-    
+
     public function testApiAccessFieldRestrictions()
     {
         $author1 = $this->objFromFixture('RestfulServerTest_Author', 'author1');
         $rating1 = $this->objFromFixture('RestfulServerTest_AuthorRating', 'rating1');
-        
+
         $url = "/api/v1/RestfulServerTest_AuthorRating/" . $rating1->ID;
         $response = Director::test($url, null, null, 'GET');
         $this->assertContains('<ID>', $response->getBody());
@@ -354,7 +354,7 @@ class RestfulServerTest extends SapphireTest
         $this->assertContains('<Author', $response->getBody());
         $this->assertNotContains('<SecretField>', $response->getBody());
         $this->assertNotContains('<SecretRelation>', $response->getBody());
-        
+
         $url = "/api/v1/RestfulServerTest_AuthorRating/" . $rating1->ID . '?add_fields=SecretField,SecretRelation';
         $response = Director::test($url, null, null, 'GET');
         $this->assertNotContains('<SecretField>', $response->getBody(),
@@ -363,7 +363,7 @@ class RestfulServerTest extends SapphireTest
         $this->assertNotContains('<SecretRelation>', $response->getBody(),
             '"add_fields" URL parameter filters out disallowed relations from $api_access'
         );
-        
+
         $url = "/api/v1/RestfulServerTest_AuthorRating/" . $rating1->ID . '?fields=SecretField,SecretRelation';
         $response = Director::test($url, null, null, 'GET');
         $this->assertNotContains('<SecretField>', $response->getBody(),
@@ -372,7 +372,7 @@ class RestfulServerTest extends SapphireTest
         $this->assertNotContains('<SecretRelation>', $response->getBody(),
             '"fields" URL parameter filters out disallowed relations from $api_access'
         );
-        
+
         $url = "/api/v1/RestfulServerTest_Author/" . $author1->ID . '/Ratings';
         $response = Director::test($url, null, null, 'GET');
         $this->assertContains('<Rating>', $response->getBody(),
@@ -382,38 +382,38 @@ class RestfulServerTest extends SapphireTest
             'Relation viewer on has-many filters out disallowed fields from $api_access'
         );
     }
-    
+
     public function testApiAccessRelationRestrictionsInline()
     {
         $author1 = $this->objFromFixture('RestfulServerTest_Author', 'author1');
-        
+
         $url = "/api/v1/RestfulServerTest_Author/" . $author1->ID;
         $response = Director::test($url, null, null, 'GET');
         $this->assertNotContains('<RelatedPages', $response->getBody(), 'Restricts many-many with api_access=false');
         $this->assertNotContains('<PublishedPages', $response->getBody(), 'Restricts has-many with api_access=false');
     }
-    
+
     public function testApiAccessRelationRestrictionsOnEndpoint()
     {
         $author1 = $this->objFromFixture('RestfulServerTest_Author', 'author1');
-        
+
         $url = "/api/v1/RestfulServerTest_Author/" . $author1->ID . "/ProfilePage";
         $response = Director::test($url, null, null, 'GET');
         $this->assertEquals(404, $response->getStatusCode(), 'Restricts has-one with api_access=false');
-        
+
         $url = "/api/v1/RestfulServerTest_Author/" . $author1->ID . "/RelatedPages";
         $response = Director::test($url, null, null, 'GET');
         $this->assertEquals(404, $response->getStatusCode(), 'Restricts many-many with api_access=false');
-        
+
         $url = "/api/v1/RestfulServerTest_Author/" . $author1->ID . "/PublishedPages";
         $response = Director::test($url, null, null, 'GET');
         $this->assertEquals(404, $response->getStatusCode(), 'Restricts has-many with api_access=false');
     }
-    
+
     public function testApiAccessWithPUT()
     {
         $rating1 = $this->objFromFixture('RestfulServerTest_AuthorRating', 'rating1');
-        
+
         $url = "/api/v1/RestfulServerTest_AuthorRating/" . $rating1->ID;
         $data = array(
             'Rating' => '42',
@@ -448,7 +448,7 @@ class RestfulServerTest extends SapphireTest
             '{"FirstName":"User","Email":"user@test.com"}]}',
             "Correct JSON formatting on a dataobjectset with field filter");
     }
-    
+
     public function testApiAccessWithPOST()
     {
         $url = "/api/v1/RestfulServerTest_AuthorRating";
@@ -492,6 +492,43 @@ class RestfulServerTest extends SapphireTest
         unset($_SERVER['PHP_AUTH_USER']);
         unset($_SERVER['PHP_AUTH_PW']);
     }
+
+    /** @group wip */
+    public function testGetWithSortDescending()
+    {
+        $url = '/api/v1/RestfulServerTest_Author?sort=FirstName&dir=DESC&fields=FirstName';
+        $response = Director::test($url);
+        $results = Convert::xml2array($response->getBody());
+        $this->assertSame('Author 4', $results['RestfulServerTest_Author'][0]['FirstName']);
+        $this->assertSame('Author 3', $results['RestfulServerTest_Author'][1]['FirstName']);
+        $this->assertSame('Author 2', $results['RestfulServerTest_Author'][2]['FirstName']);
+        $this->assertSame('Author 1', $results['RestfulServerTest_Author'][3]['FirstName']);
+    }
+
+    /** @group wip */
+    public function testGetWithSortAscending()
+    {
+        $url = '/api/v1/RestfulServerTest_Author?sort=FirstName&dir=ASC&fields=FirstName';
+        $response = Director::test($url);
+        $results = Convert::xml2array($response->getBody());
+        $this->assertSame('Author 1', $results['RestfulServerTest_Author'][0]['FirstName']);
+        $this->assertSame('Author 2', $results['RestfulServerTest_Author'][1]['FirstName']);
+        $this->assertSame('Author 3', $results['RestfulServerTest_Author'][2]['FirstName']);
+        $this->assertSame('Author 4', $results['RestfulServerTest_Author'][3]['FirstName']);
+    }
+
+    /** @group wip */
+    public function testGetSortsByIdWhenInvalidSortColumnIsProvided()
+    {
+        $url = '/api/v1/RestfulServerTest_Author?sort=Surname&dir=DESC&fields=FirstName';
+        $response = Director::test($url);
+        $results = Convert::xml2array($response->getBody());
+        $this->assertSame('Author 1', $results['RestfulServerTest_Author'][0]['FirstName']);
+        $this->assertSame('Author 2', $results['RestfulServerTest_Author'][1]['FirstName']);
+        $this->assertSame('Author 3', $results['RestfulServerTest_Author'][2]['FirstName']);
+        $this->assertSame('Author 4', $results['RestfulServerTest_Author'][3]['FirstName']);
+    }
+
 }
 
 /**
@@ -502,17 +539,17 @@ class RestfulServerTest extends SapphireTest
 class RestfulServerTest_Comment extends DataObject implements PermissionProvider,TestOnly
 {
     public static $api_access = true;
-    
+
     public static $db = array(
         "Name" => "Varchar(255)",
         "Comment" => "Text"
     );
-    
+
     public static $has_one = array(
         'Page' => 'RestfulServerTest_Page',
         'Author' => 'RestfulServerTest_Author',
     );
-    
+
     public function providePermissions()
     {
         return array(
@@ -521,22 +558,22 @@ class RestfulServerTest_Comment extends DataObject implements PermissionProvider
             'DELETE_Comment' => 'Delete Comment Objects',
         );
     }
-    
+
     public function canView($member = null)
     {
         return true;
     }
-    
+
     public function canEdit($member = null)
     {
         return Permission::checkMember($member, 'EDIT_Comment');
     }
-    
+
     public function canDelete($member = null)
     {
         return Permission::checkMember($member, 'DELETE_Comment');
     }
-    
+
     public function canCreate($member = null)
     {
         return Permission::checkMember($member, 'CREATE_Comment');
@@ -546,16 +583,16 @@ class RestfulServerTest_Comment extends DataObject implements PermissionProvider
 class RestfulServerTest_SecretThing extends DataObject implements TestOnly,PermissionProvider
 {
     public static $api_access = true;
-    
+
     public static $db = array(
         "Name" => "Varchar(255)",
     );
-    
+
     public function canView($member = null)
     {
         return Permission::checkMember($member, 'VIEW_SecretThing');
     }
-    
+
     public function providePermissions()
     {
         return array(
@@ -567,20 +604,20 @@ class RestfulServerTest_SecretThing extends DataObject implements TestOnly,Permi
 class RestfulServerTest_Page extends DataObject implements TestOnly
 {
     public static $api_access = false;
-    
+
     public static $db = array(
         'Title' => 'Text',
         'Content' => 'HTMLText',
     );
-    
+
     public static $has_one = array(
         'Author' => 'RestfulServerTest_Author',
     );
-    
+
     public static $has_many = array(
         'TestComments' => 'RestfulServerTest_Comment'
     );
-    
+
     public static $belongs_many_many = array(
         'RelatedAuthors' => 'RestfulServerTest_Author',
     );
@@ -589,21 +626,21 @@ class RestfulServerTest_Page extends DataObject implements TestOnly
 class RestfulServerTest_Author extends DataObject implements TestOnly
 {
     public static $api_access = true;
-    
+
     public static $db = array(
-        'Name' => 'Text',
+        'FirstName' => 'Text',
     );
-        
+
     public static $many_many = array(
         'RelatedPages' => 'RestfulServerTest_Page',
         'RelatedAuthors' => 'RestfulServerTest_Author',
     );
-    
+
     public static $has_many = array(
         'PublishedPages' => 'RestfulServerTest_Page',
         'Ratings' => 'RestfulServerTest_AuthorRating',
     );
-    
+
     public function canView($member = null)
     {
         return true;
@@ -622,28 +659,28 @@ class RestfulServerTest_AuthorRating extends DataObject implements TestOnly
             'Rating'
         )
     );
-    
+
     public static $db = array(
         'Rating' => 'Int',
         'SecretField' => 'Text',
         'WriteProtectedField' => 'Text',
     );
-    
+
     public static $has_one = array(
         'Author' => 'RestfulServerTest_Author',
         'SecretRelation' => 'RestfulServerTest_Author',
     );
-    
+
     public function canView($member = null)
     {
         return true;
     }
-    
+
     public function canEdit($member = null)
     {
         return true;
     }
-    
+
     public function canCreate($member = null)
     {
         return true;

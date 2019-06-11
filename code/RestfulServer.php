@@ -177,16 +177,22 @@ class RestfulServer extends Controller
      */
     protected function getHandler($className, $id, $relationName)
     {
-        $sort = '';
+        $sort = array('ID' => 'ASC');
 
-        if ($this->request->getVar('sort')) {
-            $dir = $this->request->getVar('dir');
-            $sort = array($this->request->getVar('sort') => ($dir ? $dir : 'ASC'));
+        if ($sortQuery = $this->request->getVar('sort')) {
+            /** @var DataObject $singleton */
+            $singleton = singleton($className);
+            // Only apply a sort filter if it is a valid field on the DataObject
+            if ($singleton && $singleton->hasDatabaseField($sortQuery)) {
+                $sort = array(
+                    $sortQuery => $this->request->getVar('dir') === 'DESC' ? 'DESC' : 'ASC',
+                );
+            }
         }
 
         $limit = array(
-            'start' => $this->request->getVar('start'),
-            'limit' => $this->request->getVar('limit')
+            'start' => (int) $this->request->getVar('start'),
+            'limit' => (int) $this->request->getVar('limit'),
         );
 
         $params = $this->request->getVars();
