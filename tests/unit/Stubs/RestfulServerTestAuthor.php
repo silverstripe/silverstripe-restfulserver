@@ -12,7 +12,7 @@ class RestfulServerTestAuthor extends DataObject implements TestOnly
     private static $table_name = 'RestfulServerTestAuthor';
 
     private static $db = array(
-        'Name' => 'Text',
+        'FirstName' => 'Text',
     );
 
     private static $many_many = array(

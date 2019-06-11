@@ -53,7 +53,7 @@ class RestfulServerTest extends SapphireTest
     {
         parent::setUp();
         Director::config()->set('alternate_base_url', $this->baseURI);
-        Security::setCurrentUser(null);
+        $this->logOut();
     }
 
     public function testApiAccess()
@@ -307,7 +307,7 @@ class RestfulServerTest extends SapphireTest
             'Accept' => 'application/json'
         ));
         $this->assertEquals(202, $response->getStatusCode()); // Accepted
-        $obj = Convert::json2obj($response->getBody());
+        $obj = json_decode($response->getBody());
         $this->assertEquals($comment1->ID, $obj->ID);
         $this->assertEquals('updated', $obj->Comment);
 
@@ -318,7 +318,7 @@ class RestfulServerTest extends SapphireTest
         $response = Director::test($url, null, null, 'PUT', $body);
         $this->assertEquals(202, $response->getStatusCode()); // Accepted
         $this->assertEquals($url, $response->getHeader('Location'));
-        $obj = Convert::json2obj($response->getBody());
+        $obj = json_decode($response->getBody());
         $this->assertEquals($comment1->ID, $obj->ID);
         $this->assertEquals('updated', $obj->Comment);
 
@@ -368,7 +368,7 @@ class RestfulServerTest extends SapphireTest
         $headers = array('Accept' => 'application/json');
         $response = Director::test($url, null, null, 'GET', null, $headers);
         $this->assertEquals(200, $response->getStatusCode()); // Success
-        $obj = Convert::json2obj($response->getBody());
+        $obj = json_decode($response->getBody());
         $this->assertEquals($comment1->ID, $obj->ID);
         $this->assertEquals('application/json', $response->getHeader('Content-Type'));
     }
@@ -617,6 +617,49 @@ class RestfulServerTest extends SapphireTest
         );
     }
 
+    public function testGetWithSortDescending()
+    {
+        $urlSafeClassname = $this->urlSafeClassname(RestfulServerTestAuthor::class);
+        $url = "{$this->baseURI}/api/v1/{$urlSafeClassname}?sort=FirstName&dir=DESC&fields=FirstName";
+
+        $response = Director::test($url);
+        $results = Convert::xml2array($response->getBody());
+
+        $this->assertSame('Author 4', $results[$urlSafeClassname][0]['FirstName']);
+        $this->assertSame('Author 3', $results[$urlSafeClassname][1]['FirstName']);
+        $this->assertSame('Author 2', $results[$urlSafeClassname][2]['FirstName']);
+        $this->assertSame('Author 1', $results[$urlSafeClassname][3]['FirstName']);
+    }
+
+    public function testGetWithSortAscending()
+    {
+        $urlSafeClassname = $this->urlSafeClassname(RestfulServerTestAuthor::class);
+        $url = "{$this->baseURI}/api/v1/{$urlSafeClassname}?sort=FirstName&dir=ASC&fields=FirstName";
+
+        $response = Director::test($url);
+        $results = Convert::xml2array($response->getBody());
+
+        $this->assertSame('Author 1', $results[$urlSafeClassname][0]['FirstName']);
+        $this->assertSame('Author 2', $results[$urlSafeClassname][1]['FirstName']);
+        $this->assertSame('Author 3', $results[$urlSafeClassname][2]['FirstName']);
+        $this->assertSame('Author 4', $results[$urlSafeClassname][3]['FirstName']);
+    }
+
+    public function testGetSortsByIdWhenInvalidSortColumnIsProvided()
+    {
+        $urlSafeClassname = $this->urlSafeClassname(RestfulServerTestAuthor::class);
+        $url = "{$this->baseURI}/api/v1/{$urlSafeClassname}?sort=Surname&dir=DESC&fields=FirstName";
+
+        $response = Director::test($url);
+
+        $results = Convert::xml2array($response->getBody());
+
+        $this->assertSame('Author 1', $results[$urlSafeClassname][0]['FirstName']);
+        $this->assertSame('Author 2', $results[$urlSafeClassname][1]['FirstName']);
+        $this->assertSame('Author 3', $results[$urlSafeClassname][2]['FirstName']);
+        $this->assertSame('Author 4', $results[$urlSafeClassname][3]['FirstName']);
+    }
+
     public function testApiAccessWithPOST()
     {
         $urlSafeClassname = $this->urlSafeClassname(RestfulServerTestAuthorRating::class);
@@ -659,7 +702,7 @@ class RestfulServerTest extends SapphireTest
         $response = Director::test($url, null, null, 'GET');
         $this->assertEquals(200, $response->getStatusCode());
         $this->assertNotContains('Unspeakable', $response->getBody());
-        $responseArray = Convert::json2array($response->getBody());
+        $responseArray = json_decode($response->getBody(), true);
         $this->assertSame(0, $responseArray['totalSize']);
 
         // With authentication

@@ -46,10 +46,10 @@ SilverStripe\RestfulServer\Tests\Stubs\RestfulServerTestAuthor:
    author2:
       FirstName: Author 2
    author3:
-      Firstname: Author 3
+      FirstName: Author 3
    author4:
       FirstName: Author 4
-      RelatedAuthors: 
+      RelatedAuthors:
         - =>SilverStripe\RestfulServer\Tests\Stubs\RestfulServerTestAuthor.author2
         - =>SilverStripe\RestfulServer\Tests\Stubs\RestfulServerTestAuthor.author3
 SilverStripe\RestfulServer\Tests\Stubs\RestfulServerTestAuthorRating:
