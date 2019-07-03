@@ -2,6 +2,20 @@
 
 namespace SilverStripe\RestfulServer;
 
+use NobrainerWeb\App\DataObjects\Deviation;
+use NobrainerWeb\App\Forms\Client;
+use NobrainerWeb\App\Forms\Form;
+use NobrainerWeb\App\Forms\Submission as FormSubmission;
+use NobrainerWeb\App\Invoices\Invoice;
+use NobrainerWeb\App\Logs\ErrorRequestLog;
+use NobrainerWeb\App\Logs\ImageRequestLog;
+use NobrainerWeb\App\MobileConfig\MobileConfig;
+use NobrainerWeb\App\Projects\HealthFacility;
+use NobrainerWeb\App\Projects\Order;
+use NobrainerWeb\App\Projects\Project;
+use NobrainerWeb\App\Troubleshooters\Troubleshooter;
+use NobrainerWeb\App\Units\LocationSubmission;
+use NobrainerWeb\App\Units\Unit;
 use SilverStripe\CMS\Model\SiteTree;
 use SilverStripe\Control\Controller;
 use SilverStripe\Control\Director;
@@ -71,6 +85,15 @@ class RestfulServer extends Controller
      * @var string
      */
     private static $default_extension = "xml";
+
+    /**
+     * Custom endpoints that map to a specific class.
+     * This is done to make the API have fixed endpoints, instead of using fully namespaced classnames, as the module does by default
+     * The fully namespaced classnames can also still be used though
+     *
+     * @config array
+     */
+    private static $endpoint_aliases = [];
 
     /**
      * Whether or not to send an additional "Location" header for POST requests
@@ -173,9 +196,14 @@ class RestfulServer extends Controller
      */
     public function index(HTTPRequest $request)
     {
-        $className = $this->unsanitiseClassName($request->param('ClassName'));
+        $endpoint = $request->param('ClassName');
+        $className = $this->unsanitiseClassName($endpoint);
         $id = $request->param('ID') ?: null;
         $relation = $request->param('Relation') ?: null;
+
+        if ($alias = $this->getEndpointAlias($endpoint)) {
+            $className = $alias;
+        }
 
         // Check input formats
         if (!class_exists($className)) {
@@ -884,5 +912,16 @@ class RestfulServer extends Controller
     protected function getMember()
     {
         return Security::getCurrentUser();
+    }
+
+    /**
+     * @param $endpoint
+     * @return null | string
+     */
+    protected function getEndpointAlias($endpoint)
+    {
+        $aliases = self::config()->get('endpoint_aliases');
+
+        return $aliases[$endpoint] ?? null;
     }
 }
