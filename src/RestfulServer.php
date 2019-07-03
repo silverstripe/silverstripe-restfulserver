@@ -672,7 +672,7 @@ class RestfulServer extends Controller
             $rawdata = $this->request->postVars();
         }
 
-        $className = $this->unsanitiseClassName($this->request->param('ClassName'));
+        $className = $obj->ClassName;
         // update any aliased field names
         $data = [];
         foreach ($rawdata as $key => $value) {
