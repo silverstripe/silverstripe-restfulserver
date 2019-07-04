@@ -186,14 +186,9 @@ class RestfulServer extends Controller
      */
     public function index(HTTPRequest $request)
     {
-        $endpoint = $request->param('ClassName');
-        $className = $this->unsanitiseClassName($endpoint);
+        $className = $this->unsanitiseClassName($this->findClassNameEndpoint($request->param('ClassName')));
         $id = $request->param('ID') ?: null;
         $relation = $request->param('Relation') ?: null;
-
-        if ($alias = $this->getEndpointAlias($endpoint)) {
-            $className = $alias;
-        }
 
         // Check input formats
         if (!class_exists($className)) {
@@ -905,13 +900,15 @@ class RestfulServer extends Controller
     }
 
     /**
+     * Checks if given $endpoint maps to an object in endpoint_aliases, else simply return $endpoint as is
+     *
      * @param $endpoint
      * @return null | string
      */
-    protected function getEndpointAlias($endpoint)
+    protected function findClassNameEndpoint($endpoint)
     {
         $aliases = self::config()->get('endpoint_aliases');
 
-        return $aliases[$endpoint] ?? null;
+        return $aliases[$endpoint] ?? $endpoint;
     }
 }
