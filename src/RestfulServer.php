@@ -186,7 +186,7 @@ class RestfulServer extends Controller
      */
     public function index(HTTPRequest $request)
     {
-        $className = $this->unsanitiseClassName($this->resolveEndpoint($request->param('ClassName')));
+        $className = $this->resolveEndpoint($request->param('ClassName'));
         $id = $request->param('ID') ?: null;
         $relation = $request->param('Relation') ?: null;
 
@@ -909,6 +909,6 @@ class RestfulServer extends Controller
     {
         $aliases = self::config()->get('endpoint_aliases');
 
-        return $aliases[$className] ?? $className;
+        return $aliases[$className] ?? $this->unsanitiseClassName($className);
     }
 }
