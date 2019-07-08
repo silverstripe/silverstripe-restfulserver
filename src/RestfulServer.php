@@ -905,7 +905,7 @@ class RestfulServer extends Controller
      * @param string $endpoint
      * @return string
      */
-    protected function findClassNameEndpoint($endpoint)
+    protected function findClassNameEndpoint(string $endpoint): string
     {
         $aliases = self::config()->get('endpoint_aliases');
 
