@@ -186,7 +186,7 @@ class RestfulServer extends Controller
      */
     public function index(HTTPRequest $request)
     {
-        $className = $this->unsanitiseClassName($this->findClassNameEndpoint($request->param('ClassName')));
+        $className = $this->unsanitiseClassName($this->resolveEndpoint($request->param('ClassName')));
         $id = $request->param('ID') ?: null;
         $relation = $request->param('Relation') ?: null;
 
@@ -397,7 +397,7 @@ class RestfulServer extends Controller
         $accept = $this->request->getHeader('Accept');
         $mimetypes = $this->request->getAcceptMimetypes();
         if (!$className) {
-            $className = $this->unsanitiseClassName($this->findClassNameEndpoint($this->request->param('ClassName')));
+            $className = $this->unsanitiseClassName($this->resolveEndpoint($this->request->param('ClassName')));
         }
 
         // get formatter
@@ -902,13 +902,13 @@ class RestfulServer extends Controller
     /**
      * Checks if given $endpoint maps to an object in endpoint_aliases, else simply return $endpoint as is
      *
-     * @param string $endpoint
+     * @param string $className
      * @return string
      */
-    protected function findClassNameEndpoint(string $endpoint): string
+    protected function resolveEndpoint(string $className): string
     {
         $aliases = self::config()->get('endpoint_aliases');
 
-        return $aliases[$endpoint] ?? $endpoint;
+        return $aliases[$className] ?? $className;
     }
 }
