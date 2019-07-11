@@ -900,7 +900,7 @@ class RestfulServer extends Controller
     }
 
     /**
-     * Checks if given $endpoint maps to an object in endpoint_aliases, else simply return $endpoint as is
+     * Checks if given param ClassName maps to an object in endpoint_aliases, else simply return the unsanitised version of ClassName
      *
      * @param HTTPRequest $request
      * @return string
