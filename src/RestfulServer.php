@@ -396,7 +396,7 @@ class RestfulServer extends Controller
         $accept = $this->request->getHeader('Accept');
         $mimetypes = $this->request->getAcceptMimetypes();
         if (!$className) {
-            $className = $this->unsanitiseClassName($this->resolveClassName($this->request));
+            $className = $this->resolveClassName($this->request);
         }
 
         // get formatter
