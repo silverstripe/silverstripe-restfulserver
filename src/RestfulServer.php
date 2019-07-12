@@ -74,11 +74,10 @@ class RestfulServer extends Controller
 
     /**
      * Custom endpoints that map to a specific class.
-     * This is done to make the API have fixed endpoints, instead of using fully namespaced classnames, as the module does by default
+     * This is done to make the API have fixed endpoints,
+     * instead of using fully namespaced classnames, as the module does by default
      * The fully namespaced classnames can also still be used though
-     * 
      * Example:
-     * 
      * ['mydataobject' => MyDataObject::class]
      *
      * @config array
@@ -900,7 +899,8 @@ class RestfulServer extends Controller
     }
 
     /**
-     * Checks if given param ClassName maps to an object in endpoint_aliases, else simply return the unsanitised version of ClassName
+     * Checks if given param ClassName maps to an object in endpoint_aliases,
+     * else simply return the unsanitised version of ClassName
      *
      * @param HTTPRequest $request
      * @return string
