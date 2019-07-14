@@ -73,6 +73,18 @@ class RestfulServer extends Controller
     private static $default_extension = "xml";
 
     /**
+     * Custom endpoints that map to a specific class.
+     * This is done to make the API have fixed endpoints,
+     * instead of using fully namespaced classnames, as the module does by default
+     * The fully namespaced classnames can also still be used though
+     * Example:
+     * ['mydataobject' => MyDataObject::class]
+     *
+     * @config array
+     */
+    private static $endpoint_aliases = [];
+
+    /**
      * Whether or not to send an additional "Location" header for POST requests
      * to satisfy HTTP 1.1: https://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html
      *
@@ -173,7 +185,7 @@ class RestfulServer extends Controller
      */
     public function index(HTTPRequest $request)
     {
-        $className = $this->unsanitiseClassName($request->param('ClassName'));
+        $className = $this->resolveClassName($request);
         $id = $request->param('ID') ?: null;
         $relation = $request->param('Relation') ?: null;
 
@@ -384,7 +396,7 @@ class RestfulServer extends Controller
         $accept = $this->request->getHeader('Accept');
         $mimetypes = $this->request->getAcceptMimetypes();
         if (!$className) {
-            $className = $this->unsanitiseClassName($this->request->param('ClassName'));
+            $className = $this->resolveClassName($this->request);
         }
 
         // get formatter
@@ -654,7 +666,7 @@ class RestfulServer extends Controller
             $rawdata = $this->request->postVars();
         }
 
-        $className = $this->unsanitiseClassName($this->request->param('ClassName'));
+        $className = $obj->ClassName;
         // update any aliased field names
         $data = [];
         foreach ($rawdata as $key => $value) {
@@ -884,5 +896,20 @@ class RestfulServer extends Controller
     protected function getMember()
     {
         return Security::getCurrentUser();
+    }
+
+    /**
+     * Checks if given param ClassName maps to an object in endpoint_aliases,
+     * else simply return the unsanitised version of ClassName
+     *
+     * @param HTTPRequest $request
+     * @return string
+     */
+    protected function resolveClassName(HTTPRequest $request): string
+    {
+        $className = $request->param('ClassName');
+        $aliases = self::config()->get('endpoint_aliases');
+
+        return $aliases[$className] ?? $this->unsanitiseClassName($className);
     }
 }
