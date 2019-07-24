@@ -20,6 +20,9 @@
     "require": {
         "silverstripe/framework": "3.*"
     },
+    "require-dev": {
+        "phpunit/phpunit": "^5.7"
+    },
     "extra": [],
     "license": "BSD-3-Clause"
 }
