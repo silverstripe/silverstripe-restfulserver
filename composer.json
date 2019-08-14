@@ -18,7 +18,7 @@
         "silverstripe/framework": "^4"
     },
     "require-dev": {
-        "phpunit/PHPUnit": "^5.7",
+        "phpunit/phpunit": "^5.7",
         "squizlabs/php_codesniffer": "^3.0",
         "silverstripe/versioned": "^1"
     },
@@ -28,11 +28,7 @@
             "SilverStripe\\RestfulServer\\Tests\\": "tests"
         }
     },
-    "extra": {
-        "branch-alias": {
-            "dev-master": "2.x-dev"
-        }
-    },
+    "extra": [],
     "prefer-stable": true,
     "minimum-stability": "dev"
 }
