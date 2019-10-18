@@ -905,11 +905,11 @@ class RestfulServer extends Controller
      * @param HTTPRequest $request
      * @return string
      */
-    protected function resolveClassName(HTTPRequest $request): string
+    protected function resolveClassName(HTTPRequest $request)
     {
         $className = $request->param('ClassName');
         $aliases = self::config()->get('endpoint_aliases');
 
-        return $aliases[$className] ?? $this->unsanitiseClassName($className);
+        return empty($aliases[$className]) ? $this->unsanitiseClassName($className) : $aliases[$className];
     }
 }
