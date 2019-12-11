@@ -4,17 +4,4 @@ SilverStripe\RestfulServer\Tests\Stubs\JSONDataFormatterTypeTestObject:
     Active: true
     Sort: 17
     Average: 1.2345
-  child1:
-    Name: Child 1
-    Active: 1
-    Sort: 4
-    Average: 6.78
-    Parent: =>SilverStripe\RestfulServer\Tests\Stubs\JSONDataFormatterTypeTestObject.parent
-  child2:
-    Name: Child 2
-    Active: false
-    Sort: 9
-    Average: 1
-    Parent: =>SilverStripe\RestfulServer\Tests\Stubs\JSONDataFormatterTypeTestObject.parent
-  child3:
     Parent: =>SilverStripe\RestfulServer\Tests\Stubs\JSONDataFormatterTypeTestObject.parent
