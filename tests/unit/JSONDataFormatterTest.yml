@@ -1,7 +1,8 @@
 SilverStripe\RestfulServer\Tests\Stubs\JSONDataFormatterTypeTestObject:
+  foo:
+    ID: 8
+    Name: Test Object 1
   parent:
-    Name: Parent
-    Active: true
-    Sort: 17
-    Average: 1.2345
-    Parent: =>SilverStripe\RestfulServer\Tests\Stubs\JSONDataFormatterTypeTestObject.parent
+    ID: 9
+    Name: Test Object
+    Children: =>SilverStripe\RestfulServer\Tests\Stubs\JSONDataFormatterTypeTestObject.foo
