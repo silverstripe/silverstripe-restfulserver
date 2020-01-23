@@ -49,8 +49,6 @@ class JSONDataFormatterTest extends SapphireTest
         // Test method improvements, more fields rather than just id, href, className
         $this->assertEquals(9, $json->ID, "ID not equal");
         $this->assertEquals("SilverStripe\\RestfulServer\\Tests\\Stubs\\JSONDataFormatterTypeTestObject", $json->ClassName, "Class not equal");
-        $this->assertEquals(date('Y-m-d H:i:s', time() - 1), $json->LastEdited, "Last edited does not equal");
-        $this->assertEquals(date('Y-m-d H:i:s', time() - 1), $json->Created, "Created at does not equal");
         $this->assertEquals("Test Object", $json->Name, "Name not equal");
         $this->assertEquals(false, $json->Active, "Active not equal to false");
         $this->assertEquals(0, $json->Sort, "Sort not equal to 0");
