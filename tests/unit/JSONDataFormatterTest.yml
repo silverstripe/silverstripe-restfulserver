@@ -1,4 +1,11 @@
 SilverStripe\RestfulServer\Tests\Stubs\JSONDataFormatterTypeTestObject:
+  foo:
+    ID: 8
+    Name: Test Object 1
+  original:
+    ID: 9
+    Name: Test Object
+    Children: =>SilverStripe\RestfulServer\Tests\Stubs\JSONDataFormatterTypeTestObject.foo
   parent:
     Name: Parent
     Active: true
