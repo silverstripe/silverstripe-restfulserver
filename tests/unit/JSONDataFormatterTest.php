@@ -31,7 +31,7 @@ class JSONDataFormatterTest extends SapphireTest
 
         // Grab test object
         $formatter = new JSONDataFormatter();
-        $parent = $this->objFromFixture(JSONDataFormatterTypeTestObject::class, 'parent');
+        $parent = $this->objFromFixture(JSONDataFormatterTypeTestObject::class, 'original');
         $json = json_decode($formatter->convertDataObject($parent));
 
         // Returns valid array and isn't null
