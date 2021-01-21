@@ -1,6 +1,6 @@
 # SilverStripe RestfulServer Module
 
-[![Build Status](https://travis-ci.org/silverstripe/silverstripe-restfulserver.svg?branch=master)](https://travis-ci.org/silverstripe/silverstripe-restfulserver)
+[![Build Status](https://api.travis-ci.com/silverstripe/silverstripe-restfulserver.svg?branch=2)](https://travis-ci.com/silverstripe/silverstripe-restfulserver)
 [![Scrutinizer Code Quality](https://scrutinizer-ci.com/g/silverstripe/silverstripe-restfulserver/badges/quality-score.png?b=master)](https://scrutinizer-ci.com/g/silverstripe/silverstripe-restfulserver/?branch=master)
 [![codecov](https://codecov.io/gh/silverstripe/silverstripe-restfulserver/branch/master/graph/badge.svg)](https://codecov.io/gh/silverstripe/silverstripe-restfulserver)
 [![SilverStripe supported module](https://img.shields.io/badge/silverstripe-supported-0071C4.svg)](https://www.silverstripe.org/software/addons/silverstripe-commercially-supported-module-list/)
