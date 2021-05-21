@@ -2,7 +2,11 @@
     "name": "silverstripe/restfulserver",
     "description": "Add a RESTful API to your SilverStripe application",
     "type": "silverstripe-vendormodule",
-    "keywords": ["silverstripe", "rest", "api"],
+    "keywords": [
+        "silverstripe",
+        "rest",
+        "api"
+    ],
     "license": "BSD-3-Clause",
     "authors": [
         {
@@ -28,11 +32,7 @@
             "SilverStripe\\RestfulServer\\Tests\\": "tests"
         }
     },
-    "extra": {
-        "branch-alias": {
-            "dev-master": "2.x-dev"
-        }
-    },
+    "extra": [],
     "prefer-stable": true,
     "minimum-stability": "dev"
 }
