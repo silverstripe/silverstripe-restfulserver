@@ -148,6 +148,8 @@ class XMLDataFormatter extends DataFormatter
                 if (!singleton($relClass)->stat('api_access')) {
                     continue;
                 }
+                // backslashes in FQCNs kills both URIs and XML
+                $relClass = $this->sanitiseClassName($relClass);
 
                 // Field filtering
                 if ($fields && !in_array($relName, $fields)) {
