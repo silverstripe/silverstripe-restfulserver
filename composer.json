@@ -29,7 +29,7 @@
     "autoload": {
         "psr-4": {
             "SilverStripe\\RestfulServer\\": "src",
-            "SilverStripe\\RestfulServer\\Tests\\": "tests"
+            "SilverStripe\\RestfulServer\\Tests\\": "tests/unit"
         }
     },
     "extra": [],
