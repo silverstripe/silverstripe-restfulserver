@@ -59,7 +59,7 @@ class RestfulServer extends Controller
 
     /**
      * @config
-     * @var array Class names for an authenticators to use on API access
+     * @var array Class names for authenticators to use on API access
      */
     private static $authenticators = [
 	    BasicRestfulAuthenticator::class
