@@ -148,7 +148,7 @@ class RestfulServerTest extends SapphireTest
         $_SERVER['PHP_AUTH_USER'] = 'editor@test.com';
 
         $response = Director::test($url, $data, null, 'PUT');
-        $this->assertEquals(202, $response->getStatusCode()); // Accepted by Email
+        $this->assertEquals(202, $response->getStatusCode()); // Accepted by EmailOnlyAuthenticator
 
         $_SERVER['PHP_AUTH_PW'] = 'editor';
 
