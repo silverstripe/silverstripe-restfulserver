@@ -3,6 +3,7 @@
 namespace SilverStripe\RestfulServer\Tests;
 
 use SilverStripe\RestfulServer\RestfulServer;
+use SilverStripe\RestfulServer\Tests\Stubs\EmailOnlyAuthenticator;
 use SilverStripe\RestfulServer\Tests\Stubs\RestfulServerTestComment;
 use SilverStripe\RestfulServer\Tests\Stubs\RestfulServerTestExceptionThrown;
 use SilverStripe\RestfulServer\Tests\Stubs\RestfulServerTestSecretThing;
@@ -14,12 +15,11 @@ use SilverStripe\Core\Convert;
 use SilverStripe\Control\Controller;
 use SilverStripe\RestfulServer\Tests\Stubs\RestfulServerTestValidationFailure;
 use SilverStripe\Security\Member;
-use SilverStripe\Security\Security;
-use SilverStripe\ORM\DataObject;
 use SilverStripe\Dev\SapphireTest;
 use SilverStripe\RestfulServer\DataFormatter\JSONDataFormatter;
 use Page;
 use SilverStripe\Core\Config\Config;
+use SilverStripe\RestfulServer\BasicRestfulAuthenticator;
 
 /**
  *
@@ -53,6 +53,10 @@ class RestfulServerTest extends SapphireTest
     {
         parent::setUp();
         Director::config()->set('alternate_base_url', $this->baseURI);
+        RestfulServer::config()->set('authenticators', [
+            BasicRestfulAuthenticator::class,
+	        EmailOnlyAuthenticator::class,
+        ]);
         $this->logOut();
     }
 
@@ -142,9 +146,14 @@ class RestfulServerTest extends SapphireTest
         $this->assertEquals(401, $response->getStatusCode()); // Permission failure
 
         $_SERVER['PHP_AUTH_USER'] = 'editor@test.com';
-        $_SERVER['PHP_AUTH_PW'] = 'editor';
+
         $response = Director::test($url, $data, null, 'PUT');
-        $this->assertEquals(202, $response->getStatusCode()); // Accepted
+        $this->assertEquals(202, $response->getStatusCode()); // Accepted by Email
+
+        $_SERVER['PHP_AUTH_PW'] = 'editor';
+
+        $response = Director::test($url, $data, null, 'PUT');
+        $this->assertEquals(202, $response->getStatusCode()); // Accepted by BasicRestfulAuthenticator
 
         unset($_SERVER['PHP_AUTH_USER']);
         unset($_SERVER['PHP_AUTH_PW']);
