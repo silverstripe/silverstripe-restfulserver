@@ -62,7 +62,7 @@ class RestfulServer extends Controller
      * @var array Class names for authenticators to use on API access
      */
     private static $authenticators = [
-	    BasicRestfulAuthenticator::class
+        BasicRestfulAuthenticator::class
     ];
 
     /**
@@ -859,9 +859,9 @@ class RestfulServer extends Controller
         $authClasses = $this->config()->authenticators;
         $member = null;
         foreach ($authClasses as $authClass) {
-        	if ($member = $authClass::authenticate()) {
-        		break;
-	        }
+            if ($member = $authClass::authenticate()) {
+                break;
+            }
         }
         Security::setCurrentUser($member);
         return $member;
