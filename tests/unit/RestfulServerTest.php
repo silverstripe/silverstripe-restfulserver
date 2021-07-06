@@ -55,7 +55,7 @@ class RestfulServerTest extends SapphireTest
         Director::config()->set('alternate_base_url', $this->baseURI);
         RestfulServer::config()->set('authenticators', [
             BasicRestfulAuthenticator::class,
-	        EmailOnlyAuthenticator::class,
+            EmailOnlyAuthenticator::class,
         ]);
         $this->logOut();
     }
