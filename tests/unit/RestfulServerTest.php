@@ -49,7 +49,7 @@ class RestfulServerTest extends SapphireTest
         return str_replace('\\', '-', $classname);
     }
 
-    protected function setUp()
+    protected function setUp(): void
     {
         parent::setUp();
         Director::config()->set('alternate_base_url', $this->baseURI);
@@ -88,11 +88,11 @@ class RestfulServerTest extends SapphireTest
         $urlSafeClassname = $this->urlSafeClassname(RestfulServerTestComment::class);
         $url = "{$this->baseURI}/api/v1/$urlSafeClassname/" . $comment1->ID;
         $response = Director::test($url, null, null, 'GET');
-        $this->assertContains('<ID>', $response->getBody());
-        $this->assertContains('<Name>', $response->getBody());
-        $this->assertContains('<Comment>', $response->getBody());
-        $this->assertContains('<Page', $response->getBody());
-        $this->assertContains('<Author', $response->getBody());
+        $this->assertStringContainsString('<ID>', $response->getBody());
+        $this->assertStringContainsString('<Name>', $response->getBody());
+        $this->assertStringContainsString('<Comment>', $response->getBody());
+        $this->assertStringContainsString('<Page', $response->getBody());
+        $this->assertStringContainsString('<Author', $response->getBody());
     }
 
     public function testAuthenticatedGET()
@@ -430,8 +430,8 @@ class RestfulServerTest extends SapphireTest
         $urlSafeClassname = $this->urlSafeClassname(RestfulServerTestAuthorRating::class);
         $url = "{$this->baseURI}/api/v1/$urlSafeClassname/" . $rating1->ID;
         $response = Director::test($url, null, null, 'GET');
-        $this->assertContains('<ID>' . $rating1->ID . '</ID>', $response->getBody());
-        $this->assertContains('<Rating>' . $rating1->Rating . '</Rating>', $response->getBody());
+        $this->assertStringContainsString('<ID>' . $rating1->ID . '</ID>', $response->getBody());
+        $this->assertStringContainsString('<Rating>' . $rating1->Rating . '</Rating>', $response->getBody());
     }
 
     public function testXMLValueFormattingWithFieldAlias()
@@ -442,7 +442,7 @@ class RestfulServerTest extends SapphireTest
         $urlSafeClassname = $this->urlSafeClassname(RestfulServerTestAuthorRating::class);
         $url = "{$this->baseURI}/api/v1/$urlSafeClassname/" . $rating1->ID;
         $response = Director::test($url, null, null, 'GET');
-        $this->assertContains('<rate>' . $rating1->Rating . '</rate>', $response->getBody());
+        $this->assertStringContainsString('<rate>' . $rating1->Rating . '</rate>', $response->getBody());
     }
 
     public function testApiAccessFieldRestrictions()
@@ -453,21 +453,21 @@ class RestfulServerTest extends SapphireTest
         $urlSafeClassname = $this->urlSafeClassname(RestfulServerTestAuthorRating::class);
         $url = "{$this->baseURI}/api/v1/$urlSafeClassname/" . $rating1->ID;
         $response = Director::test($url, null, null, 'GET');
-        $this->assertContains('<ID>', $response->getBody());
-        $this->assertContains('<Rating>', $response->getBody());
-        $this->assertContains('<Author', $response->getBody());
-        $this->assertNotContains('<SecretField>', $response->getBody());
-        $this->assertNotContains('<SecretRelation>', $response->getBody());
+        $this->assertStringContainsString('<ID>', $response->getBody());
+        $this->assertStringContainsString('<Rating>', $response->getBody());
+        $this->assertStringContainsString('<Author', $response->getBody());
+        $this->assertStringNotContainsString('<SecretField>', $response->getBody());
+        $this->assertStringNotContainsString('<SecretRelation>', $response->getBody());
 
         $urlSafeClassname = $this->urlSafeClassname(RestfulServerTestAuthorRating::class);
         $url = "{$this->baseURI}/api/v1/$urlSafeClassname/" . $rating1->ID . '?add_fields=SecretField,SecretRelation';
         $response = Director::test($url, null, null, 'GET');
-        $this->assertNotContains(
+        $this->assertStringNotContainsString(
             '<SecretField>',
             $response->getBody(),
             '"add_fields" URL parameter filters out disallowed fields from $api_access'
         );
-        $this->assertNotContains(
+        $this->assertStringNotContainsString(
             '<SecretRelation>',
             $response->getBody(),
             '"add_fields" URL parameter filters out disallowed relations from $api_access'
@@ -476,12 +476,12 @@ class RestfulServerTest extends SapphireTest
         $urlSafeClassname = $this->urlSafeClassname(RestfulServerTestAuthorRating::class);
         $url = "{$this->baseURI}/api/v1/$urlSafeClassname/" . $rating1->ID . '?fields=SecretField,SecretRelation';
         $response = Director::test($url, null, null, 'GET');
-        $this->assertNotContains(
+        $this->assertStringNotContainsString(
             '<SecretField>',
             $response->getBody(),
             '"fields" URL parameter filters out disallowed fields from $api_access'
         );
-        $this->assertNotContains(
+        $this->assertStringNotContainsString(
             '<SecretRelation>',
             $response->getBody(),
             '"fields" URL parameter filters out disallowed relations from $api_access'
@@ -490,12 +490,12 @@ class RestfulServerTest extends SapphireTest
         $urlSafeClassname = $this->urlSafeClassname(RestfulServerTestAuthor::class);
         $url = "{$this->baseURI}/api/v1/$urlSafeClassname/" . $author1->ID . '/Ratings';
         $response = Director::test($url, null, null, 'GET');
-        $this->assertContains(
+        $this->assertStringContainsString(
             '<Rating>',
             $response->getBody(),
             'Relation viewer shows fields allowed through $api_access'
         );
-        $this->assertNotContains(
+        $this->assertStringNotContainsString(
             '<SecretField>',
             $response->getBody(),
             'Relation viewer on has-many filters out disallowed fields from $api_access'
@@ -509,8 +509,16 @@ class RestfulServerTest extends SapphireTest
         $urlSafeClassname = $this->urlSafeClassname(RestfulServerTestAuthor::class);
         $url = "{$this->baseURI}/api/v1/$urlSafeClassname/" . $author1->ID;
         $response = Director::test($url, null, null, 'GET');
-        $this->assertNotContains('<RelatedPages', $response->getBody(), 'Restricts many-many with api_access=false');
-        $this->assertNotContains('<PublishedPages', $response->getBody(), 'Restricts has-many with api_access=false');
+        $this->assertStringNotContainsString(
+            '<RelatedPages',
+            $response->getBody(),
+            'Restricts many-many with api_access=false'
+        );
+        $this->assertStringNotContainsString(
+            '<PublishedPages',
+            $response->getBody(),
+            'Restricts has-many with api_access=false'
+        );
     }
 
     public function testApiAccessRelationRestrictionsOnEndpoint()
@@ -695,13 +703,13 @@ class RestfulServerTest extends SapphireTest
         $url = "{$this->baseURI}/api/v1/$urlSafeClassname/";
         $response = Director::test($url, null, null, 'GET');
         $this->assertEquals(200, $response->getStatusCode());
-        $this->assertNotContains('Unspeakable', $response->getBody());
+        $this->assertStringNotContainsString('Unspeakable', $response->getBody());
 
         // JSON content type
         $url = "{$this->baseURI}/api/v1/$urlSafeClassname.json";
         $response = Director::test($url, null, null, 'GET');
         $this->assertEquals(200, $response->getStatusCode());
-        $this->assertNotContains('Unspeakable', $response->getBody());
+        $this->assertStringNotContainsString('Unspeakable', $response->getBody());
         $responseArray = json_decode($response->getBody(), true);
         $this->assertSame(0, $responseArray['totalSize']);
 
@@ -712,7 +720,7 @@ class RestfulServerTest extends SapphireTest
         $url = "{$this->baseURI}/api/v1/$urlSafeClassname/";
         $response = Director::test($url, null, null, 'GET');
         $this->assertEquals(200, $response->getStatusCode());
-        $this->assertContains('Unspeakable', $response->getBody());
+        $this->assertStringContainsString('Unspeakable', $response->getBody());
         // Assumption: default formatter is XML
         $responseArray = Convert::xml2array($response->getBody());
         $this->assertEquals(1, $responseArray['@attributes']['totalSize']);
