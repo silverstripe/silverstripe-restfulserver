@@ -138,7 +138,7 @@ class RestfulServer extends Controller
      */
     protected function sanitiseClassName($className)
     {
-        return str_replace('\\', '-', $className);
+        return str_replace('\\', '-', $className ?? '');
     }
 
     /**
@@ -150,7 +150,7 @@ class RestfulServer extends Controller
      */
     protected function unsanitiseClassName($className)
     {
-        return str_replace('-', '\\', $className);
+        return str_replace('-', '\\', $className ?? '');
     }
 
     /**
@@ -163,13 +163,13 @@ class RestfulServer extends Controller
     {
         // detect many many through syntax
         if (is_array($class)
-            && array_key_exists('through', $class)
-            && array_key_exists('to', $class)
+            && array_key_exists('through', $class ?? [])
+            && array_key_exists('to', $class ?? [])
         ) {
             $toRelation = $class['to'];
 
             $hasOne = Config::inst()->get($class['through'], 'has_one');
-            if (empty($hasOne) || !is_array($hasOne) || !array_key_exists($toRelation, $hasOne)) {
+            if (empty($hasOne) || !is_array($hasOne) || !array_key_exists($toRelation, $hasOne ?? [])) {
                 return $class;
             }
 
@@ -190,14 +190,14 @@ class RestfulServer extends Controller
         $relation = $request->param('Relation') ?: null;
 
         // Check input formats
-        if (!class_exists($className)) {
+        if (!class_exists($className ?? '')) {
             return $this->notFound();
         }
         if ($id && !is_numeric($id)) {
             return $this->notFound();
         }
         if ($relation
-            && !preg_match('/^[a-zA-Z_\x7f-\xff][a-zA-Z0-9_\x7f-\xff]*$/', $relation)
+            && !preg_match('/^[a-zA-Z_\x7f-\xff][a-zA-Z0-9_\x7f-\xff]*$/', $relation ?? '')
         ) {
             return $this->notFound();
         }
@@ -326,7 +326,7 @@ class RestfulServer extends Controller
         $this->getResponse()->addHeader('Content-Type', $responseFormatter->getOutputContentType());
 
         $rawFields = $this->request->getVar('fields');
-        $realFields = $responseFormatter->getRealFields($className, explode(',', $rawFields));
+        $realFields = $responseFormatter->getRealFields($className, explode(',', $rawFields ?? ''));
         $fields = $rawFields ? $realFields : null;
 
         if ($obj instanceof SS_List) {
@@ -391,7 +391,7 @@ class RestfulServer extends Controller
     {
         $extension = $this->request->getExtension();
         $contentTypeWithEncoding = $this->request->getHeader('Content-Type');
-        preg_match('/([^;]*)/', $contentTypeWithEncoding, $contentTypeMatches);
+        preg_match('/([^;]*)/', $contentTypeWithEncoding ?? '', $contentTypeMatches);
         $contentType = $contentTypeMatches[0];
         $accept = $this->request->getHeader('Accept');
         $mimetypes = $this->request->getAcceptMimetypes();
@@ -402,7 +402,7 @@ class RestfulServer extends Controller
         // get formatter
         if (!empty($extension)) {
             $formatter = DataFormatter::for_extension($extension);
-        } elseif ($includeAcceptHeader && !empty($accept) && strpos($accept, '*/*') === false) {
+        } elseif ($includeAcceptHeader && !empty($accept) && strpos($accept ?? '', '*/*') === false) {
             $formatter = DataFormatter::for_mimetypes($mimetypes);
             if (!$formatter) {
                 $formatter = DataFormatter::for_extension($this->config()->default_extension);
@@ -419,11 +419,11 @@ class RestfulServer extends Controller
 
         // set custom fields
         if ($customAddFields = $this->request->getVar('add_fields')) {
-            $customAddFields = $formatter->getRealFields($className, explode(',', $customAddFields));
+            $customAddFields = $formatter->getRealFields($className, explode(',', $customAddFields ?? ''));
             $formatter->setCustomAddFields($customAddFields);
         }
         if ($customFields = $this->request->getVar('fields')) {
-            $customFields = $formatter->getRealFields($className, explode(',', $customFields));
+            $customFields = $formatter->getRealFields($className, explode(',', $customFields ?? ''));
             $formatter->setCustomFields($customFields);
         }
         $formatter->setCustomRelations($this->getAllowedRelations($className));
@@ -537,7 +537,7 @@ class RestfulServer extends Controller
         // or else we'll use the default (XML)
         $types = $responseFormatter->supportedExtensions();
         $type = '';
-        if (count($types)) {
+        if (count($types ?? [])) {
             $type = ".{$types[0]}";
         }
 
@@ -581,7 +581,7 @@ class RestfulServer extends Controller
             }
 
             if (!Config::inst()->get($className, 'allowed_actions') ||
-                !in_array($relation, Config::inst()->get($className, 'allowed_actions'))) {
+                !in_array($relation, Config::inst()->get($className, 'allowed_actions') ?? [])) {
                 return $this->permissionFailure();
             }
 
@@ -622,7 +622,7 @@ class RestfulServer extends Controller
         // or else we'll use the default (XML)
         $types = $responseFormatter->supportedExtensions();
         $type = '';
-        if (count($types)) {
+        if (count($types ?? [])) {
             $type = ".{$types[0]}";
         }
 
@@ -675,11 +675,11 @@ class RestfulServer extends Controller
         }
 
         // @todo Disallow editing of certain keys in database
-        $data = array_diff_key($data, ['ID', 'Created']);
+        $data = array_diff_key($data ?? [], ['ID', 'Created']);
 
         $apiAccess = singleton($className)->config()->api_access;
         if (is_array($apiAccess) && isset($apiAccess['edit'])) {
-            $data = array_intersect_key($data, array_combine($apiAccess['edit'], $apiAccess['edit']));
+            $data = array_intersect_key($data ?? [], array_combine($apiAccess['edit'] ?? [], $apiAccess['edit'] ?? []));
         }
 
         $obj->update($data);
@@ -878,7 +878,7 @@ class RestfulServer extends Controller
                 $relClass = static::parseRelationClass($relClass);
 
                 //remove dot notation from relation names
-                $parts = explode('.', $relClass);
+                $parts = explode('.', $relClass ?? '');
                 $relClass = array_shift($parts);
                 if (Config::inst()->get($relClass, 'api_access')) {
                     $allowedRelations[] = $relName;

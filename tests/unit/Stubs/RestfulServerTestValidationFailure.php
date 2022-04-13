@@ -30,11 +30,11 @@ class RestfulServerTestValidationFailure extends DataObject implements TestOnly
     {
         $result = parent::validate();
 
-        if (strlen($this->Content) === 0) {
+        if (strlen($this->Content ?? '') === 0) {
             $result->addFieldError('Content', 'Content required');
         }
 
-        if (strlen($this->Title) === 0) {
+        if (strlen($this->Title ?? '') === 0) {
             $result->addFieldError('Title', 'Title required');
         }
 
