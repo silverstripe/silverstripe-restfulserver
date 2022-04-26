@@ -103,7 +103,7 @@ abstract class DataFormatter
      */
     protected function sanitiseClassName($className)
     {
-        return str_replace('\\', '-', $className);
+        return str_replace('\\', '-', $className ?? '');
     }
 
     /**
@@ -123,7 +123,7 @@ abstract class DataFormatter
         arsort($sortedClasses);
         foreach ($sortedClasses as $className => $priority) {
             $formatter = new $className();
-            if (in_array($extension, $formatter->supportedExtensions())) {
+            if (in_array($extension, $formatter->supportedExtensions() ?? [])) {
                 return $formatter;
             }
         }
@@ -163,7 +163,7 @@ abstract class DataFormatter
         arsort($sortedClasses);
         foreach ($sortedClasses as $className => $priority) {
             $formatter = new $className();
-            if (in_array($mimeType, $formatter->supportedMimeTypes())) {
+            if (in_array($mimeType, $formatter->supportedMimeTypes() ?? [])) {
                 return $formatter;
             }
         }
@@ -329,7 +329,10 @@ abstract class DataFormatter
         $dbFields = array_merge($dbFields, ['ID' => 'Int']);
 
         if (is_array($this->removeFields)) {
-            $dbFields = array_diff_key($dbFields, array_combine($this->removeFields, $this->removeFields));
+            $dbFields = array_diff_key(
+                $dbFields ?? [],
+                array_combine($this->removeFields ?? [], $this->removeFields ?? [])
+            );
         }
 
         return $dbFields;
@@ -418,7 +421,7 @@ abstract class DataFormatter
     public function getFieldAlias($className, $field)
     {
         $apiMapping = $this->getApiMapping($className);
-        $apiMapping = array_flip($apiMapping);
+        $apiMapping = array_flip($apiMapping ?? []);
         return $this->getMappedKey($apiMapping, $field);
     }
 
@@ -448,7 +451,7 @@ abstract class DataFormatter
     protected function getMappedKey($map, $key)
     {
         if (is_array($map)) {
-            if (array_key_exists($key, $map)) {
+            if (array_key_exists($key, $map ?? [])) {
                 return $map[$key];
             } else {
                 return $key;

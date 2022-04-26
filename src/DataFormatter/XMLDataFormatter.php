@@ -121,7 +121,7 @@ class XMLDataFormatter extends DataFormatter
         $xml = "<$className href=\"$objHref.xml\">\n";
         foreach ($this->getFieldsForObj($obj) as $fieldName => $fieldType) {
             // Field filtering
-            if ($fields && !in_array($fieldName, $fields)) {
+            if ($fields && !in_array($fieldName, $fields ?? [])) {
                 continue;
             }
             $fieldValue = $obj->obj($fieldName)->forTemplate();
@@ -134,7 +134,7 @@ class XMLDataFormatter extends DataFormatter
             } else {
                 if ('HTMLText' == $fieldType) {
                     // Escape HTML values using CDATA
-                    $fieldValue = sprintf('<![CDATA[%s]]>', str_replace(']]>', ']]]]><![CDATA[>', $fieldValue));
+                    $fieldValue = sprintf('<![CDATA[%s]]>', str_replace(']]>', ']]]]><![CDATA[>', $fieldValue ?? ''));
                 } else {
                     $fieldValue = Convert::raw2xml($fieldValue);
                 }
@@ -150,10 +150,10 @@ class XMLDataFormatter extends DataFormatter
                 }
 
                 // Field filtering
-                if ($fields && !in_array($relName, $fields)) {
+                if ($fields && !in_array($relName, $fields ?? [])) {
                     continue;
                 }
-                if ($this->customRelations && !in_array($relName, $this->customRelations)) {
+                if ($this->customRelations && !in_array($relName, $this->customRelations ?? [])) {
                     continue;
                 }
 
@@ -169,7 +169,7 @@ class XMLDataFormatter extends DataFormatter
 
             foreach ($obj->hasMany() as $relName => $relClass) {
                 //remove dot notation from relation names
-                $parts = explode('.', $relClass);
+                $parts = explode('.', $relClass ?? '');
                 $relClass = array_shift($parts);
                 if (!singleton($relClass)->stat('api_access')) {
                     continue;
@@ -178,10 +178,10 @@ class XMLDataFormatter extends DataFormatter
                 $relClass = $this->sanitiseClassName($relClass);
 
                 // Field filtering
-                if ($fields && !in_array($relName, $fields)) {
+                if ($fields && !in_array($relName, $fields ?? [])) {
                     continue;
                 }
-                if ($this->customRelations && !in_array($relName, $this->customRelations)) {
+                if ($this->customRelations && !in_array($relName, $this->customRelations ?? [])) {
                     continue;
                 }
 
@@ -200,7 +200,7 @@ class XMLDataFormatter extends DataFormatter
                 $relClass = RestfulServer::parseRelationClass($relClass);
 
                 //remove dot notation from relation names
-                $parts = explode('.', $relClass);
+                $parts = explode('.', $relClass ?? '');
                 $relClass = array_shift($parts);
                 if (!singleton($relClass)->stat('api_access')) {
                     continue;
@@ -209,10 +209,10 @@ class XMLDataFormatter extends DataFormatter
                 $relClass = $this->sanitiseClassName($relClass);
 
                 // Field filtering
-                if ($fields && !in_array($relName, $fields)) {
+                if ($fields && !in_array($relName, $fields ?? [])) {
                     continue;
                 }
-                if ($this->customRelations && !in_array($relName, $this->customRelations)) {
+                if ($this->customRelations && !in_array($relName, $this->customRelations ?? [])) {
                     continue;
                 }
 

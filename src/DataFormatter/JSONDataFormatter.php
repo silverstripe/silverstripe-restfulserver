@@ -86,7 +86,7 @@ class JSONDataFormatter extends DataFormatter
 
         foreach ($this->getFieldsForObj($obj) as $fieldName => $fieldType) {
             // Field filtering
-            if ($fields && !in_array($fieldName, $fields)) {
+            if ($fields && !in_array($fieldName, $fields ?? [])) {
                 continue;
             }
 
@@ -102,10 +102,10 @@ class JSONDataFormatter extends DataFormatter
                 }
 
                 // Field filtering
-                if ($fields && !in_array($relName, $fields)) {
+                if ($fields && !in_array($relName, $fields ?? [])) {
                     continue;
                 }
-                if ($this->customRelations && !in_array($relName, $this->customRelations)) {
+                if ($this->customRelations && !in_array($relName, $this->customRelations ?? [])) {
                     continue;
                 }
                 if ($obj->$relName() && (!$obj->$relName()->exists() || !$obj->$relName()->canView())) {
@@ -129,7 +129,7 @@ class JSONDataFormatter extends DataFormatter
                 $relClass = RestfulServer::parseRelationClass($relClass);
 
                 //remove dot notation from relation names
-                $parts = explode('.', $relClass);
+                $parts = explode('.', $relClass ?? '');
                 $relClass = array_shift($parts);
 
                 if (!singleton($relClass)->stat('api_access')) {
@@ -137,10 +137,10 @@ class JSONDataFormatter extends DataFormatter
                 }
 
                 // Field filtering
-                if ($fields && !in_array($relName, $fields)) {
+                if ($fields && !in_array($relName, $fields ?? [])) {
                     continue;
                 }
-                if ($this->customRelations && !in_array($relName, $this->customRelations)) {
+                if ($this->customRelations && !in_array($relName, $this->customRelations ?? [])) {
                     continue;
                 }
 
@@ -195,7 +195,7 @@ class JSONDataFormatter extends DataFormatter
      */
     public function convertStringToArray($strData)
     {
-        return json_decode($strData, true);
+        return json_decode($strData ?? '', true);
     }
 
     public static function cast(FieldType\DBField $dbfield)
