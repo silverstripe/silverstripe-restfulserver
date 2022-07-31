@@ -1,9 +1,7 @@
-# SilverStripe RestfulServer Module
+# Silverstripe RestfulServer Module
 
 [![CI](https://github.com/silverstripe/silverstripe-restfulserver/actions/workflows/ci.yml/badge.svg)](https://github.com/silverstripe/silverstripe-restfulserver/actions/workflows/ci.yml)
-[![Scrutinizer Code Quality](https://scrutinizer-ci.com/g/silverstripe/silverstripe-restfulserver/badges/quality-score.png?b=master)](https://scrutinizer-ci.com/g/silverstripe/silverstripe-restfulserver/?branch=master)
-[![codecov](https://codecov.io/gh/silverstripe/silverstripe-restfulserver/branch/master/graph/badge.svg)](https://codecov.io/gh/silverstripe/silverstripe-restfulserver)
-[![SilverStripe supported module](https://img.shields.io/badge/silverstripe-supported-0071C4.svg)](https://www.silverstripe.org/software/addons/silverstripe-commercially-supported-module-list/)
+[![Silverstripe supported module](https://img.shields.io/badge/silverstripe-supported-0071C4.svg)](https://www.silverstripe.org/software/addons/silverstripe-commercially-supported-module-list/)
 
 ## Overview
 
@@ -14,9 +12,9 @@ applications.
 
 ## Requirements
 
-* SilverStripe 4.0 or higher
+* Silverstripe 4.0 or higher
 
-For a SilverStripe 3.x compatible version of this module, please see the [1.0 branch, or 1.x release line](https://github.com/silverstripe/silverstripe-restfulserver/tree/1.0#readme).
+For a Silverstripe 3.x compatible version of this module, please see the [1.0 branch, or 1.x release line](https://github.com/silverstripe/silverstripe-restfulserver/tree/1.0#readme).
 
 ## Configuration
 
