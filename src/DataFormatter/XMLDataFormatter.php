@@ -2,6 +2,7 @@
 
 namespace SilverStripe\RestfulServer\DataFormatter;
 
+use SimpleXMLElement;
 use SilverStripe\Control\Controller;
 use SilverStripe\Core\Convert;
 use SilverStripe\Dev\Debug;
@@ -11,6 +12,7 @@ use SilverStripe\ORM\DataObjectInterface;
 use SilverStripe\Control\Director;
 use SilverStripe\ORM\SS_List;
 use SilverStripe\RestfulServer\RestfulServer;
+use InvalidArgumentException;
 
 /**
  * Formats a DataObject's member fields into an XML string
@@ -145,7 +147,7 @@ class XMLDataFormatter extends DataFormatter
 
         if ($this->relationDepth > 0) {
             foreach ($obj->hasOne() as $relName => $relClass) {
-                if (!singleton($relClass)->stat('api_access')) {
+                if (!singleton($relClass)::config()->get('api_access')) {
                     continue;
                 }
 
@@ -171,7 +173,7 @@ class XMLDataFormatter extends DataFormatter
                 //remove dot notation from relation names
                 $parts = explode('.', $relClass ?? '');
                 $relClass = array_shift($parts);
-                if (!singleton($relClass)->stat('api_access')) {
+                if (!singleton($relClass)::config()->get('api_access')) {
                     continue;
                 }
                 // backslashes in FQCNs kills both URIs and XML
@@ -202,7 +204,7 @@ class XMLDataFormatter extends DataFormatter
                 //remove dot notation from relation names
                 $parts = explode('.', $relClass ?? '');
                 $relClass = array_shift($parts);
-                if (!singleton($relClass)->stat('api_access')) {
+                if (!singleton($relClass)::config()->get('api_access')) {
                     continue;
                 }
                 // backslashes in FQCNs kills both URIs and XML
@@ -261,6 +263,79 @@ class XMLDataFormatter extends DataFormatter
      */
     public function convertStringToArray($strData)
     {
-        return Convert::xml2array($strData);
+        return self::xml2array($strData);
+    }
+
+    /**
+     * This was copied from Convert::xml2array() which is deprecated/removed
+     *
+     * Converts an XML string to a PHP array
+     * See http://phpsecurity.readthedocs.org/en/latest/Injection-Attacks.html#xml-external-entity-injection
+     *
+     * @uses recursiveXMLToArray()
+     * @param string $val
+     * @param boolean $disableDoctypes Disables the use of DOCTYPE, and will trigger an error if encountered.
+     * false by default.
+     * @param boolean $disableExternals Does nothing because xml entities are removed
+     * @return array
+     * @throws Exception
+     */
+    private static function xml2array($val, $disableDoctypes = false, $disableExternals = false)
+    {
+        // Check doctype
+        if ($disableDoctypes && strpos($val ?? '', '<!DOCTYPE') !== false) {
+            throw new InvalidArgumentException('XML Doctype parsing disabled');
+        }
+
+        // CVE-2021-41559 Ensure entities are removed due to their inherent security risk via
+        // XXE attacks and quadratic blowup attacks, and also lack of consistent support
+        $val = preg_replace('/(?s)<!ENTITY.*?>/', '', $val ?? '');
+
+        // If there's still an <!ENTITY> present, then it would be the result of a maliciously
+        // crafted XML document e.g. <!ENTITY><!<!ENTITY>ENTITY ext SYSTEM "http://evil.com">
+        if (strpos($val ?? '', '<!ENTITY') !== false) {
+            throw new InvalidArgumentException('Malicious XML entity detected');
+        }
+
+        // This will throw an exception if the XML contains references to any internal entities
+        // that were defined in an <!ENTITY /> before it was removed
+        $xml = new SimpleXMLElement($val ?? '');
+        return self::recursiveXMLToArray($xml);
+    }
+
+    /**
+     * @param SimpleXMLElement $xml
+     *
+     * @return mixed
+     */
+    private static function recursiveXMLToArray($xml)
+    {
+        $x = null;
+        if ($xml instanceof SimpleXMLElement) {
+            $attributes = $xml->attributes();
+            foreach ($attributes as $k => $v) {
+                if ($v) {
+                    $a[$k] = (string) $v;
+                }
+            }
+            $x = $xml;
+            $xml = get_object_vars($xml);
+        }
+        if (is_array($xml)) {
+            if (count($xml ?? []) === 0) {
+                return (string)$x;
+            } // for CDATA
+            $r = [];
+            foreach ($xml as $key => $value) {
+                $r[$key] = self::recursiveXMLToArray($value);
+            }
+            // Attributes
+            if (isset($a)) {
+                $r['@'] = $a;
+            }
+            return $r;
+        }
+
+        return (string) $xml;
     }
 }

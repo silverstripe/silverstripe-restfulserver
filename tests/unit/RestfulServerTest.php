@@ -20,6 +20,7 @@ use SilverStripe\Dev\SapphireTest;
 use SilverStripe\RestfulServer\DataFormatter\JSONDataFormatter;
 use Page;
 use SilverStripe\Core\Config\Config;
+use SilverStripe\RestfulServer\DataFormatter\XMLDataFormatter;
 
 /**
  *
@@ -126,7 +127,8 @@ class RestfulServerTest extends SapphireTest
         $urlSafeClassname = $this->urlSafeClassname(RestfulServerTestAuthorRating::class);
         $url = "{$this->baseURI}/api/v1/$urlSafeClassname/" . $rating1->ID;
         $response = Director::test($url, null, null, 'GET');
-        $responseArr = Convert::xml2array($response->getBody());
+        $formatter = new XMLDataFormatter();
+        $responseArr = $formatter->convertStringToArray($response->getBody());
         $this->assertEquals(3, $responseArr['rate']);
     }
 
@@ -165,7 +167,8 @@ class RestfulServerTest extends SapphireTest
         $response = Director::test($url, null, null, 'GET');
         $this->assertEquals(200, $response->getStatusCode());
 
-        $responseArr = Convert::xml2array($response->getBody());
+        $formatter = new XMLDataFormatter();
+        $responseArr = $formatter->convertStringToArray($response->getBody());
         $xmlTagSafeClassName = $this->urlSafeClassname(RestfulServerTestAuthorRating::class);
         $ratingsArr = $responseArr['Ratings'][$xmlTagSafeClassName];
         $this->assertEquals(2, count($ratingsArr ?? []));
@@ -192,7 +195,8 @@ class RestfulServerTest extends SapphireTest
         $response = Director::test($url, null, null, 'GET');
         $this->assertEquals(200, $response->getStatusCode());
 
-        $responseArr = Convert::xml2array($response->getBody());
+        $formatter = new XMLDataFormatter();
+        $responseArr = $formatter->convertStringToArray($response->getBody());
         $xmlTagSafeClassName = $this->urlSafeClassname(RestfulServerTestAuthorRating::class);
 
         $this->assertTrue(array_key_exists('Ratings', $responseArr ?? []));
@@ -210,7 +214,9 @@ class RestfulServerTest extends SapphireTest
         $url = "{$this->baseURI}/api/v1/$urlSafeClassname/" . $author4->ID . '/RelatedAuthors';
         $response = Director::test($url, null, null, 'GET');
         $this->assertEquals(200, $response->getStatusCode());
-        $arr = Convert::xml2array($response->getBody());
+        
+        $formatter = new XMLDataFormatter();
+        $arr = $formatter->convertStringToArray($response->getBody());
         $xmlSafeClassName = $this->urlSafeClassname(RestfulServerTestAuthor::class);
         $authorsArr = $arr[$xmlSafeClassName];
 
@@ -239,7 +245,8 @@ class RestfulServerTest extends SapphireTest
         $response = Director::test($url, null, null, 'PUT', $body, $headers);
         $this->assertEquals(202, $response->getStatusCode()); // Accepted
         // Assumption: XML is default output
-        $responseArr = Convert::xml2array($response->getBody());
+        $formatter = new XMLDataFormatter();
+        $responseArr = $formatter->convertStringToArray($response->getBody());
         $this->assertEquals($comment1->ID, $responseArr['ID']);
         $this->assertEquals('updated', $responseArr['Comment']);
         $this->assertEquals('Updated Comment', $responseArr['Name']);
@@ -264,7 +271,8 @@ class RestfulServerTest extends SapphireTest
         $response = Director::test($url, null, null, 'POST', $body, $headers);
         $this->assertEquals(201, $response->getStatusCode()); // Created
         // Assumption: XML is default output
-        $responseArr = Convert::xml2array($response->getBody());
+        $formatter = new XMLDataFormatter();
+        $responseArr = $formatter->convertStringToArray($response->getBody());
         $this->assertTrue($responseArr['ID'] > 0);
         $this->assertNotEquals($responseArr['ID'], $comment1->ID);
         $this->assertEquals('created', $responseArr['Comment']);
@@ -339,7 +347,8 @@ class RestfulServerTest extends SapphireTest
         $body = '<RestfulServerTestComment><Comment>updated</Comment></RestfulServerTestComment>';
         $response = Director::test($url, null, null, 'PUT', $body, array('Content-Type'=>'text/xml'));
         $this->assertEquals(202, $response->getStatusCode()); // Accepted
-        $obj = Convert::xml2array($response->getBody());
+        $formatter = new XMLDataFormatter();
+        $obj = $formatter->convertStringToArray($response->getBody());
         $this->assertEquals($comment1->ID, $obj['ID']);
         $this->assertEquals('updated', $obj['Comment']);
 
@@ -350,7 +359,8 @@ class RestfulServerTest extends SapphireTest
         $response = Director::test($url, null, null, 'PUT', $body);
         $this->assertEquals(202, $response->getStatusCode()); // Accepted
         $this->assertEquals($url, $response->getHeader('Location'));
-        $obj = Convert::xml2array($response->getBody());
+        $formatter = new XMLDataFormatter();
+        $obj = $formatter->convertStringToArray($response->getBody());
         $this->assertEquals($comment1->ID, $obj['ID']);
         $this->assertEquals('updated', $obj['Comment']);
 
@@ -553,7 +563,8 @@ class RestfulServerTest extends SapphireTest
         );
         $response = Director::test($url, $data, null, 'PUT');
         // Assumption: XML is default output
-        $responseArr = Convert::xml2array($response->getBody());
+        $formatter = new XMLDataFormatter();
+        $responseArr = $formatter->convertStringToArray($response->getBody());
         $this->assertEquals(42, $responseArr['Rating']);
         $this->assertNotEquals('haxx0red', $responseArr['WriteProtectedField']);
     }
@@ -570,7 +581,8 @@ class RestfulServerTest extends SapphireTest
         );
         $response = Director::test($url, $data, null, 'PUT');
         // Assumption: XML is default output
-        $responseArr = Convert::xml2array($response->getBody());
+        $formatter = new XMLDataFormatter();
+        $responseArr = $formatter->convertStringToArray($response->getBody());
         // should output with aliased name
         $this->assertEquals(42, $responseArr['rate']);
     }
@@ -631,7 +643,8 @@ class RestfulServerTest extends SapphireTest
         $url = "{$this->baseURI}/api/v1/{$urlSafeClassname}?sort=FirstName&dir=DESC&fields=FirstName";
 
         $response = Director::test($url);
-        $results = Convert::xml2array($response->getBody());
+        $formatter = new XMLDataFormatter();
+        $results = $formatter->convertStringToArray($response->getBody());
 
         $this->assertSame('Author 4', $results[$urlSafeClassname][0]['FirstName']);
         $this->assertSame('Author 3', $results[$urlSafeClassname][1]['FirstName']);
@@ -645,7 +658,8 @@ class RestfulServerTest extends SapphireTest
         $url = "{$this->baseURI}/api/v1/{$urlSafeClassname}?sort=FirstName&dir=ASC&fields=FirstName";
 
         $response = Director::test($url);
-        $results = Convert::xml2array($response->getBody());
+        $formatter = new XMLDataFormatter();
+        $results = $formatter->convertStringToArray($response->getBody());
 
         $this->assertSame('Author 1', $results[$urlSafeClassname][0]['FirstName']);
         $this->assertSame('Author 2', $results[$urlSafeClassname][1]['FirstName']);
@@ -660,7 +674,8 @@ class RestfulServerTest extends SapphireTest
 
         $response = Director::test($url);
 
-        $results = Convert::xml2array($response->getBody());
+        $formatter = new XMLDataFormatter();
+        $results = $formatter->convertStringToArray($response->getBody());
 
         $this->assertSame('Author 1', $results[$urlSafeClassname][0]['FirstName']);
         $this->assertSame('Author 2', $results[$urlSafeClassname][1]['FirstName']);
@@ -678,7 +693,8 @@ class RestfulServerTest extends SapphireTest
         ];
         $response = Director::test($url, $data, null, 'POST');
         // Assumption: XML is default output
-        $responseArr = Convert::xml2array($response->getBody());
+        $formatter = new XMLDataFormatter();
+        $responseArr = $formatter->convertStringToArray($response->getBody());
         $this->assertEquals(42, $responseArr['Rating']);
         $this->assertNotEquals('haxx0red', $responseArr['WriteProtectedField']);
     }
@@ -692,7 +708,8 @@ class RestfulServerTest extends SapphireTest
             'rate' => '42',
         ];
         $response = Director::test($url, $data, null, 'POST');
-        $responseArr = Convert::xml2array($response->getBody());
+        $formatter = new XMLDataFormatter();
+        $responseArr = $formatter->convertStringToArray($response->getBody());
         $this->assertEquals(42, $responseArr['rate']);
     }
 
@@ -722,7 +739,8 @@ class RestfulServerTest extends SapphireTest
         $this->assertEquals(200, $response->getStatusCode());
         $this->assertStringContainsString('Unspeakable', $response->getBody());
         // Assumption: default formatter is XML
-        $responseArray = Convert::xml2array($response->getBody());
+        $formatter = new XMLDataFormatter();
+        $responseArray = $formatter->convertStringToArray($response->getBody());
         $this->assertEquals(1, $responseArray['@attributes']['totalSize']);
         unset($_SERVER['PHP_AUTH_USER']);
         unset($_SERVER['PHP_AUTH_PW']);
@@ -737,7 +755,8 @@ class RestfulServerTest extends SapphireTest
         ];
         $response = Director::test($url, $data, null, 'POST');
         // Assumption: XML is default output
-        $responseArr = Convert::xml2array($response->getBody());
+        $formatter = new XMLDataFormatter();
+        $responseArr = $formatter->convertStringToArray($response->getBody());
         $this->assertEquals('SilverStripe\\ORM\\ValidationException', $responseArr['type']);
     }
 
@@ -750,7 +769,8 @@ class RestfulServerTest extends SapphireTest
         ];
         $response = Director::test($url, $data, null, 'POST');
         // Assumption: XML is default output
-        $responseArr = Convert::xml2array($response->getBody());
+        $formatter = new XMLDataFormatter();
+        $responseArr = $formatter->convertStringToArray($response->getBody());
         $this->assertEquals(\Exception::class, $responseArr['type']);
     }
 
