@@ -97,7 +97,7 @@ class JSONDataFormatter extends DataFormatter
 
         if ($this->relationDepth > 0) {
             foreach ($obj->hasOne() as $relName => $relClass) {
-                if (!singleton($relClass)->stat('api_access')) {
+                if (!$relClass::config()->get('api_access')) {
                     continue;
                 }
 
@@ -132,7 +132,7 @@ class JSONDataFormatter extends DataFormatter
                 $parts = explode('.', $relClass ?? '');
                 $relClass = array_shift($parts);
 
-                if (!singleton($relClass)->stat('api_access')) {
+                if (!$relClass::config()->get('api_access')) {
                     continue;
                 }
 

@@ -289,6 +289,10 @@ class RestfulServer extends Controller
             'limit' => (int) $this->request->getVar('limit'),
         ];
 
+        if ($limit['limit'] === 0) {
+            $limit = null;
+        }
+
         $params = $this->request->getVars();
 
         $responseFormatter = $this->getResponseDataFormatter($className);
