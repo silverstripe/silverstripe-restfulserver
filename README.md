@@ -3,18 +3,18 @@
 [![CI](https://github.com/silverstripe/silverstripe-restfulserver/actions/workflows/ci.yml/badge.svg)](https://github.com/silverstripe/silverstripe-restfulserver/actions/workflows/ci.yml)
 [![Silverstripe supported module](https://img.shields.io/badge/silverstripe-supported-0071C4.svg)](https://www.silverstripe.org/software/addons/silverstripe-commercially-supported-module-list/)
 
+## Installation
+
+```sh
+composer require silverstripe/restfulserver
+```
+
 ## Overview
 
 This class gives your application a RESTful API.  All you have to do is set the `api_access` configuration option to `true`
 on the appropriate DataObjects.  You will need to ensure that all of your data manipulation and security is defined in
 your model layer (ie, the DataObject classes) and not in your Controllers.  This is the recommended design for SilverStripe
 applications.
-
-## Requirements
-
-* Silverstripe 4.0 or higher
-
-For a Silverstripe 3.x compatible version of this module, please see the [1.0 branch, or 1.x release line](https://github.com/silverstripe/silverstripe-restfulserver/tree/1.0#readme).
 
 ## Configuration
 
