@@ -18,7 +18,6 @@ class JSONDataFormatter extends DataFormatter
 {
     /**
      * @config
-     * @todo pass this from the API to the data formatter somehow
      */
     private static $api_base = "api/v1/";
 
