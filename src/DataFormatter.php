@@ -32,8 +32,6 @@ abstract class DataFormatter
      * ($has_one, $has_many, $many_many).
      * Set to "0" to disable relation output.
      *
-     * @todo Support more than one nesting level
-     *
      * @var int
      */
     public $relationDepth = 1;
@@ -290,9 +288,6 @@ abstract class DataFormatter
      * Returns all fields on the object which should be shown
      * in the output. Can be customised through {@link self::setCustomFields()}.
      *
-     * @todo Allow for custom getters on the processed object (currently filtered through inheritedDatabaseFields)
-     * @todo Field level permission checks
-     *
      * @param DataObject $obj
      * @return array
      */
@@ -303,7 +298,6 @@ abstract class DataFormatter
         // if custom fields are specified, only select these
         if (is_array($this->customFields)) {
             foreach ($this->customFields as $fieldName) {
-                // @todo Possible security risk by making methods accessible - implement field-level security
                 if (($obj->hasField($fieldName) && !is_object($obj->getField($fieldName)))
                     || $obj->hasMethod("get{$fieldName}")
                 ) {
@@ -318,7 +312,6 @@ abstract class DataFormatter
 
         if (is_array($this->customAddFields)) {
             foreach ($this->customAddFields as $fieldName) {
-                // @todo Possible security risk by making methods accessible - implement field-level security
                 if ($obj->hasField($fieldName) || $obj->hasMethod("get{$fieldName}")) {
                     $dbFields[$fieldName] = $fieldName;
                 }

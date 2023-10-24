@@ -12,7 +12,6 @@ namespace SilverStripe\RestfulServer\DataFormatter;
  * curl -X PUT -d "Name=This is an updated record" http://host/api/v1/(DataObject)/1
  * </code>
  *
- * @todo Format response form encoded as well - currently uses XMLDataFormatter
  *
  * @author Cam Spiers <camspiers at gmail dot com>
  */
@@ -37,7 +36,5 @@ class FormEncodedDataFormatter extends XMLDataFormatter
         $postArray = array();
         parse_str($strData ?? '', $postArray);
         return $postArray;
-        //TODO: It would be nice to implement this function in Convert.php
-        //return Convert::querystr2array($strData);
     }
 }

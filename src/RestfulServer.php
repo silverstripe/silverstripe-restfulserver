@@ -22,23 +22,6 @@ use SilverStripe\Security\Security;
  * Relies on serialization/deserialization into different formats provided
  * by the DataFormatter APIs in core.
  *
- * @todo Implement PUT/POST/DELETE for relations
- * @todo Access-Control for relations (you might be allowed to view Members and Groups,
- *       but not their relation with each other)
- * @todo Make SearchContext specification customizeable for each class
- * @todo Allow for range-searches (e.g. on Created column)
- * @todo Filter relation listings by $api_access and canView() permissions
- * @todo Exclude relations when "fields" are specified through URL (they should be explicitly
- *       requested in this case)
- * @todo Custom filters per DataObject subclass, e.g. to disallow showing unpublished pages in
- * SiteTree/Versioned/Hierarchy
- * @todo URL parameter namespacing for search-fields, limit, fields, add_fields
- *       (might all be valid dataobject properties)
- *       e.g. you wouldn't be able to search for a "limit" property on your subclass as
- *       its overlayed with the search logic
- * @todo i18n integration (e.g. Page/1.xml?lang=de_DE)
- * @todo Access to extendable methods/relations like SiteTree/1/Versions or SiteTree/1/Version/22
- * @todo Respect $api_access array notation in search contexts
  */
 class RestfulServer extends Controller
 {
@@ -119,7 +102,6 @@ class RestfulServer extends Controller
     {
         /* This sets up SiteTree the same as when viewing a page through the frontend. Versioned defaults
          * to Stage, and then when viewing the front-end Versioned::choose_site_stage changes it to Live.
-         * TODO: In 3.2 we should make the default Live, then change to Stage in the admin area (with a nicer API)
          */
         if (class_exists(SiteTree::class)) {
             singleton(SiteTree::class)->extend('modelascontrollerInit', $this);
@@ -262,8 +244,6 @@ class RestfulServer extends Controller
      *   - static $api_access must be set. This enables the API on a class by class basis
      *   - $obj->canView() must return true. This lets you implement record-level security
      *
-     * @todo Access checking
-     *
      * @param string $className
      * @param int $id
      * @param string $relation
@@ -319,7 +299,6 @@ class RestfulServer extends Controller
                     return $this->notFound();
                 }
 
-                // TODO Avoid creating data formatter again for relation class (see above)
                 $responseFormatter = $this->getResponseDataFormatter($obj->dataClass());
             }
         } else {
@@ -361,8 +340,6 @@ class RestfulServer extends Controller
      * {@link DataObject::getDefaultSearchContext()} to augument
      * an existing query object (mostly a component query from {@link DataObject})
      * with search clauses.
-     *
-     * @todo Allow specifying of different searchcontext getters on model-by-model basis
      *
      * @param string $className
      * @param array $params
@@ -556,9 +533,6 @@ class RestfulServer extends Controller
     /**
      * Handler for object append / method call.
      *
-     * @todo Posting to an existing URL (without a relation)
-     * current resolves in creatig a new element,
-     * rather than a "Conflict" message.
      */
     protected function postHandler($className, $id, $relation)
     {
@@ -678,7 +652,6 @@ class RestfulServer extends Controller
             $data[$newkey] = $value;
         }
 
-        // @todo Disallow editing of certain keys in database
         $data = array_diff_key($data ?? [], ['ID', 'Created']);
 
         $apiAccess = singleton($className)->config()->api_access;
@@ -866,7 +839,6 @@ class RestfulServer extends Controller
 
     /**
      * Return only relations which have $api_access enabled.
-     * @todo Respect field level permissions once they are available in core
      *
      * @param string $class
      * @param Member $member

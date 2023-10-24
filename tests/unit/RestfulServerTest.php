@@ -22,13 +22,6 @@ use Page;
 use SilverStripe\Core\Config\Config;
 use SilverStripe\RestfulServer\DataFormatter\XMLDataFormatter;
 
-/**
- *
- * @todo Test Relation getters
- * @todo Test filter and limit through GET params
- * @todo Test DELETE verb
- *
- */
 class RestfulServerTest extends SapphireTest
 {
     protected static $fixture_file = 'RestfulServerTest.yml';
@@ -101,7 +94,6 @@ class RestfulServerTest extends SapphireTest
         $thing1 = $this->objFromFixture(RestfulServerTestSecretThing::class, 'thing1');
         $comment1 = $this->objFromFixture(RestfulServerTestComment::class, 'comment1');
 
-        // @todo create additional mock object with authenticated VIEW permissions
         $urlSafeClassname = $this->urlSafeClassname(RestfulServerTestSecretThing::class);
         $url = "{$this->baseURI}/api/v1/$urlSafeClassname/" . $thing1->ID;
         $response = Director::test($url, null, null, 'GET');
@@ -158,7 +150,6 @@ class RestfulServerTest extends SapphireTest
         $rating1 = $this->objFromFixture(RestfulServerTestAuthorRating::class, 'rating1');
         $rating2 = $this->objFromFixture(RestfulServerTestAuthorRating::class, 'rating2');
 
-        // @todo should be set up by fixtures, doesn't work for some reason...
         $author1->Ratings()->add($rating1);
         $author1->Ratings()->add($rating2);
 
@@ -187,7 +178,6 @@ class RestfulServerTest extends SapphireTest
         $author1 = $this->objFromFixture(RestfulServerTestAuthor::class, 'author1');
         $rating1 = $this->objFromFixture(RestfulServerTestAuthorRating::class, 'rating1');
 
-        // @todo should be set up by fixtures, doesn't work for some reason...
         $author1->Ratings()->add($rating1);
 
         $urlSafeClassname = $this->urlSafeClassname(RestfulServerTestAuthor::class);
