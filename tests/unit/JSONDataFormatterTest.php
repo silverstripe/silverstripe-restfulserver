@@ -7,13 +7,6 @@ use SilverStripe\RestfulServer\Tests\Stubs\JSONDataFormatterTypeTestObject;
 use SilverStripe\Dev\SapphireTest;
 use SilverStripe\RestfulServer\DataFormatter\JSONDataFormatter;
 
-/**
- *
- * @todo Test Relation getters
- * @todo Test filter and limit through GET params
- * @todo Test DELETE verb
- *
- */
 class JSONDataFormatterTest extends SapphireTest
 {
     protected static $fixture_file = 'JSONDataFormatterTest.yml';
