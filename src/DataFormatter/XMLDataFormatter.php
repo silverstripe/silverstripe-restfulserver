@@ -125,7 +125,7 @@ class XMLDataFormatter extends DataFormatter
             if ($fields && !in_array($fieldName, $fields ?? [])) {
                 continue;
             }
-            $fieldValue = $obj->obj($fieldName)->forTemplate();
+            $fieldValue = $obj->obj($fieldName)?->forTemplate();
             if (!mb_check_encoding($fieldValue, 'utf-8')) {
                 $fieldValue = "(data is badly encoded)";
             }

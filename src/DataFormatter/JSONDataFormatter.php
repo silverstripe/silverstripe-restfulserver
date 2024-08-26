@@ -89,7 +89,12 @@ class JSONDataFormatter extends DataFormatter
                 continue;
             }
 
-            $fieldValue = JSONDataFormatter::cast($obj->obj($fieldName));
+            $dbField = $obj->obj($fieldName);
+            if ($dbField) {
+                $fieldValue = JSONDataFormatter::cast($dbField);
+            } else {
+                $fieldValue = null;
+            }
             $mappedFieldName = $this->getFieldAlias($className, $fieldName);
             $serobj->$mappedFieldName = $fieldValue;
         }
@@ -117,10 +122,11 @@ class JSONDataFormatter extends DataFormatter
                     ? $this->sanitiseClassName($relClass) . '/' . $obj->$fieldName
                     : $this->sanitiseClassName($className) . "/$id/$relName";
                 $href = Director::absoluteURL($rel);
+                $dbField = $obj->obj($fieldName);
                 $serobj->$relName = ArrayData::array_to_object(array(
                     "className" => $relClass,
                     "href" => "$href.json",
-                    "id" => JSONDataFormatter::cast($obj->obj($fieldName))
+                    "id" => $dbField ? JSONDataFormatter::cast($dbField): ''
                 ));
             }
 
