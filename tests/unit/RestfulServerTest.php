@@ -20,6 +20,7 @@ use SilverStripe\Dev\SapphireTest;
 use SilverStripe\RestfulServer\DataFormatter\JSONDataFormatter;
 use Page;
 use SilverStripe\Core\Config\Config;
+use SilverStripe\Core\Validation\ValidationException;
 use SilverStripe\RestfulServer\DataFormatter\XMLDataFormatter;
 
 class RestfulServerTest extends SapphireTest
@@ -204,7 +205,7 @@ class RestfulServerTest extends SapphireTest
         $url = "{$this->baseURI}/api/v1/$urlSafeClassname/" . $author4->ID . '/RelatedAuthors';
         $response = Director::test($url, null, null, 'GET');
         $this->assertEquals(200, $response->getStatusCode());
-        
+
         $formatter = new XMLDataFormatter();
         $arr = $formatter->convertStringToArray($response->getBody());
         $xmlSafeClassName = $this->urlSafeClassname(RestfulServerTestAuthor::class);
@@ -747,7 +748,7 @@ class RestfulServerTest extends SapphireTest
         // Assumption: XML is default output
         $formatter = new XMLDataFormatter();
         $responseArr = $formatter->convertStringToArray($response->getBody());
-        $this->assertEquals('SilverStripe\\ORM\\ValidationException', $responseArr['type']);
+        $this->assertEquals(ValidationException::class, $responseArr['type']);
     }
 
     public function testExceptionThrownWithPOST()

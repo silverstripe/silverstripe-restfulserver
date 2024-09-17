@@ -8,12 +8,12 @@ use SilverStripe\Control\Director;
 use SilverStripe\Control\HTTPRequest;
 use SilverStripe\Core\Config\Config;
 use SilverStripe\Core\Injector\Injector;
-use SilverStripe\ORM\ArrayList;
+use SilverStripe\Model\List\ArrayList;
 use SilverStripe\ORM\DataList;
 use SilverStripe\ORM\DataObject;
-use SilverStripe\ORM\SS_List;
-use SilverStripe\ORM\ValidationException;
-use SilverStripe\ORM\ValidationResult;
+use SilverStripe\Model\List\SS_List;
+use SilverStripe\Core\Validation\ValidationException;
+use SilverStripe\Core\Validation\ValidationResult;
 use SilverStripe\Security\Member;
 use SilverStripe\Security\Security;
 

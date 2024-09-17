@@ -2,7 +2,7 @@
 
 namespace SilverStripe\RestfulServer;
 
-use SilverStripe\ORM\SS_List;
+use SilverStripe\Model\List\SS_List;
 
 /**
  * Restful server handler for a single DataObject

@@ -24,7 +24,7 @@ class RestfulServerTestValidationFailure extends DataObject implements TestOnly
     );
 
     /**
-     * @return \SilverStripe\ORM\ValidationResult
+     * @return \SilverStripe\Core\Validation\ValidationResult
      */
     public function validate()
     {

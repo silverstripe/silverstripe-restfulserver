@@ -10,7 +10,7 @@ use SilverStripe\RestfulServer\DataFormatter;
 use SilverStripe\ORM\DataObject;
 use SilverStripe\ORM\DataObjectInterface;
 use SilverStripe\Control\Director;
-use SilverStripe\ORM\SS_List;
+use SilverStripe\Model\List\SS_List;
 use SilverStripe\RestfulServer\RestfulServer;
 use InvalidArgumentException;
 
