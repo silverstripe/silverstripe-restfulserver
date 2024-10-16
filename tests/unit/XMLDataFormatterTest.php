@@ -5,6 +5,8 @@ namespace SilverStripe\RestfulServer\Tests;
 use SilverStripe\Dev\SapphireTest;
 use SilverStripe\RestfulServer\DataFormatter\XMLDataFormatter;
 use Exception;
+use SilverStripe\Control\Controller;
+use SilverStripe\ORM\DataObject;
 
 class XMLDataFormatterTest extends SapphireTest
 {
@@ -73,5 +75,72 @@ XML
         $this->expectExceptionMessage('String could not be parsed as XML');
         $formatter = new XMLDataFormatter();
         $formatter->convertStringToArray($inputXML);
+    }
+
+    /**
+     * Tests wrapper output of {@link XMLDataFormatter::convertDataObjectWithoutHeader()}
+     */
+    public function testConvertDataObjectWithoutHeaderClassNameAttribute(): void
+    {
+        // Create a mock object
+        $mock = DataObject::create();
+        $mock->ID = 1;
+
+        // Disable trailing slash by default
+        Controller::config()->set('add_trailing_slash', false);
+
+        // Create a formatter
+        $formatter = new XMLDataFormatter();
+
+        // Test the output
+        $expectedClass = 'SilverStripe-ORM-DataObject';
+        $expectedHref = sprintf('http://localhost/api/v1/%s/%d.xml', $expectedClass, $mock->ID);
+        $expectedOutput = sprintf(
+            '<%s href="%s"><ID>%d</ID></%s>',
+            $expectedClass,
+            $expectedHref,
+            $mock->ID,
+            $expectedClass
+        );
+
+        $actualOutput = $formatter->convertDataObjectWithoutHeader($mock);
+
+        // remove line breaks and compare
+        $actualOutput = str_replace(["\n", "\r"], '', $actualOutput);
+        $this->assertEquals($expectedOutput, $actualOutput);
+    }
+
+    /**
+     * Tests wrapper output of {@link XMLDataFormatter::convertDataObjectWithoutHeader()} when
+     * used with a forced trailing slash
+     */
+    public function testConvertDataObjectWithoutHeaderClassNameAttributeWithTrailingSlash(): void
+    {
+        // Create a mock object
+        $mock = DataObject::create();
+        $mock->ID = 1;
+
+        // Enable trailing slash by default
+        Controller::config()->set('add_trailing_slash', true);
+
+        // Create a formatter
+        $formatter = new XMLDataFormatter();
+
+        // Test the output
+        $expectedClass = 'SilverStripe-ORM-DataObject';
+        $expectedHref = sprintf('http://localhost/api/v1/%s/%d.xml', $expectedClass, $mock->ID);
+        $expectedOutput = sprintf(
+            '<%s href="%s"><ID>%d</ID></%s>',
+            $expectedClass,
+            $expectedHref,
+            $mock->ID,
+            $expectedClass
+        );
+
+        $actualOutput = $formatter->convertDataObjectWithoutHeader($mock);
+
+        // remove line breaks and compare
+        $actualOutput = str_replace(["\n", "\r"], '', $actualOutput);
+        $this->assertEquals($expectedOutput, $actualOutput);
     }
 }

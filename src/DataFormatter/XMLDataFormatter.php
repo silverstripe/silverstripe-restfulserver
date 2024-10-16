@@ -117,9 +117,9 @@ class XMLDataFormatter extends DataFormatter
     {
         $className = $this->sanitiseClassName(get_class($obj));
         $id = $obj->ID;
-        $objHref = Director::absoluteURL($this->config()->api_base . "$className/$obj->ID");
+        $objHref = Director::absoluteURL($this->config()->api_base . "$className/$obj->ID" . ".xml");
 
-        $xml = "<$className href=\"$objHref.xml\">\n";
+        $xml = "<$className href=\"$objHref\">\n";
         foreach ($this->getFieldsForObj($obj) as $fieldName => $fieldType) {
             // Field filtering
             if ($fields && !in_array($fieldName, $fields ?? [])) {
