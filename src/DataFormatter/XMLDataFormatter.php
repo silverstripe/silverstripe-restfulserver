@@ -160,11 +160,11 @@ class XMLDataFormatter extends DataFormatter
 
                 $fieldName = $relName . 'ID';
                 if ($obj->$fieldName) {
-                    $href = Director::absoluteURL($this->config()->api_base . "$relClass/" . $obj->$fieldName);
+                    $href = Director::absoluteURL($this->config()->api_base . "$relClass/" . $obj->$fieldName . ".xml");
                 } else {
-                    $href = Director::absoluteURL($this->config()->api_base . "$className/$id/$relName");
+                    $href = Director::absoluteURL($this->config()->api_base . "$className/$id/$relName" . ".xml");
                 }
-                $xml .= "<$relName linktype=\"has_one\" href=\"$href.xml\" id=\"" . $obj->$fieldName
+                $xml .= "<$relName linktype=\"has_one\" href=\"$href\" id=\"" . $obj->$fieldName
                     . "\"></$relName>\n";
             }
 
@@ -190,8 +190,8 @@ class XMLDataFormatter extends DataFormatter
                 $items = $obj->$relName();
                 if ($items) {
                     foreach ($items as $item) {
-                        $href = Director::absoluteURL($this->config()->api_base . "$relClass/$item->ID");
-                        $xml .= "<$relClass href=\"$href.xml\" id=\"{$item->ID}\"></$relClass>\n";
+                        $href = Director::absoluteURL($this->config()->api_base . "$relClass/$item->ID" . ".xml");
+                        $xml .= "<$relClass href=\"$href\" id=\"{$item->ID}\"></$relClass>\n";
                     }
                 }
                 $xml .= "</$relName>\n";
@@ -221,8 +221,8 @@ class XMLDataFormatter extends DataFormatter
                 $items = $obj->$relName();
                 if ($items) {
                     foreach ($items as $item) {
-                        $href = Director::absoluteURL($this->config()->api_base . "$relClass/$item->ID");
-                        $xml .= "<$relClass href=\"$href.xml\" id=\"{$item->ID}\"></$relClass>\n";
+                        $href = Director::absoluteURL($this->config()->api_base . "$relClass/$item->ID" . ".xml");
+                        $xml .= "<$relClass href=\"$href\" id=\"{$item->ID}\"></$relClass>\n";
                     }
                 }
                 $xml .= "</$relName>\n";
