@@ -78,50 +78,30 @@ XML
     }
 
     /**
-     * Tests wrapper output of {@link XMLDataFormatter::convertDataObjectWithoutHeader()}
+     * Data provider for trailing slash configuration
      */
-    public function testConvertDataObjectWithoutHeaderClassNameAttribute(): void
+    public function trailingSlashProvider(): array
     {
-        // Create a mock object
-        $mock = DataObject::create();
-        $mock->ID = 1;
-
-        // Disable trailing slash by default
-        Controller::config()->set('add_trailing_slash', false);
-
-        // Create a formatter
-        $formatter = new XMLDataFormatter();
-
-        // Test the output
-        $expectedClass = 'SilverStripe-ORM-DataObject';
-        $expectedHref = sprintf('http://localhost/api/v1/%s/%d.xml', $expectedClass, $mock->ID);
-        $expectedOutput = sprintf(
-            '<%s href="%s"><ID>%d</ID></%s>',
-            $expectedClass,
-            $expectedHref,
-            $mock->ID,
-            $expectedClass
-        );
-
-        $actualOutput = $formatter->convertDataObjectWithoutHeader($mock);
-
-        // remove line breaks and compare
-        $actualOutput = str_replace(["\n", "\r"], '', $actualOutput);
-        $this->assertEquals($expectedOutput, $actualOutput);
+        return [
+            'without trailing slash' => [false],
+            'with trailing slash' => [true],
+        ];
     }
 
     /**
-     * Tests wrapper output of {@link XMLDataFormatter::convertDataObjectWithoutHeader()} when
-     * used with a forced trailing slash
+     * Tests wrapper output of {@link XMLDataFormatter::convertDataObjectWithoutHeader()}
+     *
+     * @param bool $addTrailingSlash - Whether to add a trailing slash to the API endpoint
+     * @dataProvider trailingSlashProvider
      */
-    public function testConvertDataObjectWithoutHeaderClassNameAttributeWithTrailingSlash(): void
+    public function testConvertDataObjectWithoutHeaderClassNameAttribute(bool $addTrailingSlash): void
     {
         // Create a mock object
         $mock = DataObject::create();
         $mock->ID = 1;
 
-        // Enable trailing slash by default
-        Controller::config()->set('add_trailing_slash', true);
+        // Set trailing slash configuration
+        Controller::config()->set('add_trailing_slash', $addTrailingSlash);
 
         // Create a formatter
         $formatter = new XMLDataFormatter();
