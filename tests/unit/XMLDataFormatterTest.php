@@ -91,8 +91,7 @@ XML
     /**
      * Tests wrapper output of {@link XMLDataFormatter::convertDataObjectWithoutHeader()}
      *
-     * @param bool $addTrailingSlash - Whether to add a trailing slash to the API endpoint
-     * @dataProvider trailingSlashProvider
+     * @dataProvider provideConvertDataObjectWithoutHeaderClassNameAttribute
      */
     public function testConvertDataObjectWithoutHeaderClassNameAttribute(bool $addTrailingSlash): void
     {
