@@ -80,7 +80,7 @@ XML
     /**
      * Data provider for trailing slash configuration
      */
-    public function trailingSlashProvider(): array
+    public function provideConvertDataObjectWithoutHeaderClassNameAttribute(): array
     {
         return [
             'without trailing slash' => [false],
