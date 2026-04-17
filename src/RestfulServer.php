@@ -462,7 +462,7 @@ class RestfulServer extends Controller
      */
     protected function deleteHandler($className, $id)
     {
-        $obj = DataObject::get_by_id($className, $id);
+        $obj = $this->getObjectQuery($className, $id, $this->request->getVars())->first();
         if (!$obj) {
             return $this->notFound();
         }
