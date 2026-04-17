@@ -167,6 +167,8 @@ class RestfulServer extends Controller
      */
     public function index(HTTPRequest $request)
     {
+        $this->extend('onBeforeIndex', $request);
+
         $className = $this->resolveClassName($request);
         $id = $request->param('ID') ?: null;
         $relation = $request->param('Relation') ?: null;
@@ -192,6 +194,8 @@ class RestfulServer extends Controller
 
         // authenticate through HTTP BasicAuth
         $this->member = $this->authenticate();
+
+        $this->extend('onBeforeHandleAPIRequest', $request, $className);
 
         try {
             // handle different HTTP verbs
@@ -683,7 +687,16 @@ class RestfulServer extends Controller
      */
     protected function getObjectQuery($className, $id, $params)
     {
-        return DataList::create($className)->byIDs([$id]);
+        //needed for e.g. get all locales
+        $this->extend('onBeforeGetObjectQuery', $className, $id, $params);
+        $query = DataList::create($className)->byIDs([$id]);
+
+        //possibility to get another list, e.g. by another identifier
+        $this->extend('updateObjectQuery', $query, $className, $id, $params);
+
+        //needed for e.g. get all locales
+        $this->extend('onAfterGetObjectQuery', $query, $className, $id, $params);
+        return $query;
     }
 
     /**
