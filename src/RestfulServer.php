@@ -15,6 +15,7 @@ use SilverStripe\ORM\SS_List;
 use SilverStripe\ORM\ValidationException;
 use SilverStripe\ORM\ValidationResult;
 use SilverStripe\Security\Member;
+use SilverStripe\Security\PermissionFailureException;
 use SilverStripe\Security\Security;
 
 /**
@@ -214,7 +215,12 @@ class RestfulServer extends Controller
             if ($this->request->isDELETE()) {
                 return $this->deleteHandler($className, $id, $relation);
             }
-        } catch (\Exception $e) {
+        }
+        catch(PermissionFailureException $e)
+        {
+            $this->permissionFailure();
+        }
+        catch (\Exception $e) {
             return $this->exceptionThrown($this->getRequestDataFormatter($className), $e);
         }
 
@@ -255,6 +261,8 @@ class RestfulServer extends Controller
      */
     protected function getHandler($className, $id, $relationName)
     {
+        $this->extend('onBeforeGetHandler', $className, $id, $relationName);
+
         $sort = ['ID' => 'ASC'];
 
         if ($sortQuery = $this->request->getVar('sort')) {
@@ -466,6 +474,7 @@ class RestfulServer extends Controller
      */
     protected function deleteHandler($className, $id)
     {
+        $this->extend('onBeforeDeleteHandler', $className, $id, $relationName);
         $obj = $this->getObjectQuery($className, $id, $this->request->getVars())->first();
         if (!$obj) {
             return $this->notFound();
@@ -485,6 +494,7 @@ class RestfulServer extends Controller
      */
     protected function putHandler($className, $id)
     {
+        $this->extend('onBeforePutHandler', $className, $id, $relationName);
         $obj = DataObject::get_by_id($className, $id);
         if (!$obj) {
             return $this->notFound();
@@ -540,6 +550,8 @@ class RestfulServer extends Controller
      */
     protected function postHandler($className, $id, $relation)
     {
+        $this->extend('onBeforePostHandler', $className, $id, $relationName);
+
         if ($id) {
             if (!$relation) {
                 $this->response->setStatusCode(409);
