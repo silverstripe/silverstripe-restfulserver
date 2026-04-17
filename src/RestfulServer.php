@@ -175,7 +175,7 @@ class RestfulServer extends Controller
         if (!class_exists($className ?? '')) {
             return $this->notFound();
         }
-        if ($id && !is_numeric($id)) {
+        if ($id && !$this->isValidID($id)) {
             return $this->notFound();
         }
         if ($relation
@@ -615,6 +615,13 @@ class RestfulServer extends Controller
         }
 
         return $responseFormatter->convertDataObject($obj);
+    }
+
+    protected function isValidID($id): bool
+    {
+        $valid = is_numeric($id);
+        $extendedValid = max($this->extend('updateIsValidID', $id, $valid));
+        return max($valid, $extendedValid);
     }
 
     /**
