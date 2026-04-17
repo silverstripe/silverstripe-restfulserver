@@ -636,7 +636,12 @@ class RestfulServer extends Controller
     protected function isValidID($id): bool
     {
         $valid = is_numeric($id);
-        $extendedValid = max($this->extend('updateIsValidID', $id, $valid));
+
+        $extendedValid = $this->extend('updateIsValidID', $id, $valid);
+        $extendedValid = count($extendedValid)
+            ? (bool)max($extendedValid)
+            : (bool)$extendedValid;
+
         return max($valid, $extendedValid);
     }
 
