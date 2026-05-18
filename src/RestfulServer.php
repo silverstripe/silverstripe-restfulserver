@@ -558,7 +558,7 @@ class RestfulServer extends Controller
                 return 'Conflict';
             }
 
-            $obj = DataObject::get_by_id($className, $id);
+            $obj = $this->getObjectQuery($className, $id, $this->request->getVars())->first();
             if (!$obj) {
                 return $this->notFound();
             }
