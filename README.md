@@ -110,6 +110,40 @@ Similarly, `PUT` or `POST` requests will have fields transformed from the alias 
  - `DELETE /api/v1/(ClassName)/(ID)/(Relation)/(ForeignID)` - remove the relationship between two database records, but don't actually delete the foreign object (NOT IMPLEMENTED YET)
  - `POST /api/v1/(ClassName)/(ID)/(MethodName)` - executes a method on the given object (e.g, publish)
 
+## Batch Operations
+
+The module supports batch operations for `POST` (create multiple) and `PUT` (update multiple) requests.
+
+### JSON Batch
+
+To send multiple records in JSON, provide a list of objects in the request body:
+
+```json
+[
+    {"Name": "Item 1", "Comment": "First"},
+    {"Name": "Item 2", "Comment": "Second"}
+]
+```
+
+The response will be a JSON array containing the results for each operation.
+
+### XML Batch
+
+To send multiple records in XML, wrap the objects in a plural tag corresponding to the class name or its configured alias:
+
+```xml
+<Articles>
+    <Article>
+        <Title>Article 1</Title>
+    </Article>
+    <Article>
+        <Title>Article 2</Title>
+    </Article>
+</Articles>
+```
+
+The response will be wrapped in the same tag name used in the request URL (e.g. `<Articles>` if the endpoint is `/api/v1/Articles.xml`). Batch detection also works for single-item lists wrapped in a plural tag.
+
 ## Search
 
 You can trigger searches based on the fields specified on `DataObject::searchable_fields` and passed
