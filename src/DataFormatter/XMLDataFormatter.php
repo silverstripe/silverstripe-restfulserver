@@ -191,9 +191,13 @@ class XMLDataFormatter extends DataFormatter
 
                 $fieldName = $relName . 'ID';
                 if ($obj->$fieldName) {
-                    $href = Director::absoluteURL($this->config()->api_base . "$relClass/" . $obj->$fieldName . ".xml");
+                    $href = Director::absoluteURL(
+                        $this->config()->api_base . "$relClass/" . $obj->$fieldName . ".xml"
+                    );
                 } else {
-                    $href = Director::absoluteURL($this->config()->api_base . "$sanitisedClassName/$id/$relName" . ".xml");
+                    $href = Director::absoluteURL(
+                        $this->config()->api_base . "$sanitisedClassName/$id/$relName" . ".xml"
+                    );
                 }
                 $xml .= "<$relName linktype=\"has_one\" href=\"$href\" id=\"" . $obj->$fieldName
                     . "\"></$relName>\n";
@@ -221,7 +225,9 @@ class XMLDataFormatter extends DataFormatter
                 $items = $obj->$relName();
                 if ($items) {
                     foreach ($items as $item) {
-                        $href = Director::absoluteURL($this->config()->api_base . "$relSanitisedClass/$item->ID" . ".xml");
+                        $href = Director::absoluteURL(
+                            $this->config()->api_base . "$relSanitisedClass/$item->ID" . ".xml"
+                        );
                         $xml .= "<$relSanitisedClass href=\"$href\" id=\"{$item->ID}\"></$relSanitisedClass>\n";
                     }
                 }
@@ -252,7 +258,9 @@ class XMLDataFormatter extends DataFormatter
                 $items = $obj->$relName();
                 if ($items) {
                     foreach ($items as $item) {
-                        $href = Director::absoluteURL($this->config()->api_base . "$relSanitisedClass/$item->ID" . ".xml");
+                        $href = Director::absoluteURL(
+                            $this->config()->api_base . "$relSanitisedClass/$item->ID" . ".xml"
+                        );
                         $xml .= "<$relSanitisedClass href=\"$href\" id=\"{$item->ID}\"></$relSanitisedClass>\n";
                     }
                 }
