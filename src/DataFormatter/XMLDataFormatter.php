@@ -92,12 +92,14 @@ class XMLDataFormatter extends DataFormatter
 
     /**
      * @param array $results
+     * @param string|null $className Class name to use for the wrapper tag (pluralized)
      * @return string
      */
-    public function convertBatch(array $results)
+    public function convertBatch(array $results, $className = null)
     {
         $xml = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n";
-        $xml .= "<BatchResponse>\n";
+        $wrapper = $className ? $this->sanitiseClassName($className) : 'BatchResponse';
+        $xml .= "<$wrapper>\n";
         foreach ($results as $res) {
             if ($res instanceof DataObjectInterface) {
                 $xml .= $this->convertDataObjectWithoutHeader($res);
@@ -114,7 +116,7 @@ class XMLDataFormatter extends DataFormatter
                 }
             }
         }
-        $xml .= "</BatchResponse>";
+        $xml .= "</$wrapper>";
         return $xml;
     }
 
@@ -143,11 +145,12 @@ class XMLDataFormatter extends DataFormatter
      */
     public function convertDataObjectWithoutHeader(DataObject $obj, $fields = null, $relations = null)
     {
-        $className = $this->sanitiseClassName(get_class($obj));
+        $className = get_class($obj);
+        $sanitisedClassName = $this->sanitiseClassName($className);
         $id = $obj->ID;
-        $objHref = Director::absoluteURL($this->config()->api_base . "$className/$obj->ID" . ".xml");
+        $objHref = Director::absoluteURL($this->config()->api_base . "$sanitisedClassName/$obj->ID" . ".xml");
 
-        $xml = "<$className href=\"$objHref\">\n";
+        $xml = "<$sanitisedClassName href=\"$objHref\">\n";
         foreach ($this->getFieldsForObj($obj) as $fieldName => $fieldType) {
             // Field filtering
             if ($fields && !in_array($fieldName, $fields ?? [])) {
@@ -167,7 +170,7 @@ class XMLDataFormatter extends DataFormatter
                 } else {
                     $fieldValue = Convert::raw2xml($fieldValue);
                 }
-                $mappedFieldName = $this->getFieldAlias(get_class($obj), $fieldName);
+                $mappedFieldName = $this->getFieldAlias($className, $fieldName);
                 $xml .= "<$mappedFieldName>$fieldValue</$mappedFieldName>\n";
             }
         }
@@ -190,7 +193,7 @@ class XMLDataFormatter extends DataFormatter
                 if ($obj->$fieldName) {
                     $href = Director::absoluteURL($this->config()->api_base . "$relClass/" . $obj->$fieldName . ".xml");
                 } else {
-                    $href = Director::absoluteURL($this->config()->api_base . "$className/$id/$relName" . ".xml");
+                    $href = Director::absoluteURL($this->config()->api_base . "$sanitisedClassName/$id/$relName" . ".xml");
                 }
                 $xml .= "<$relName linktype=\"has_one\" href=\"$href\" id=\"" . $obj->$fieldName
                     . "\"></$relName>\n";
@@ -204,7 +207,7 @@ class XMLDataFormatter extends DataFormatter
                     continue;
                 }
                 // backslashes in FQCNs kills both URIs and XML
-                $relClass = $this->sanitiseClassName($relClass);
+                $relSanitisedClass = $this->sanitiseClassName($relClass);
 
                 // Field filtering
                 if ($fields && !in_array($relName, $fields ?? [])) {
@@ -218,8 +221,8 @@ class XMLDataFormatter extends DataFormatter
                 $items = $obj->$relName();
                 if ($items) {
                     foreach ($items as $item) {
-                        $href = Director::absoluteURL($this->config()->api_base . "$relClass/$item->ID" . ".xml");
-                        $xml .= "<$relClass href=\"$href\" id=\"{$item->ID}\"></$relClass>\n";
+                        $href = Director::absoluteURL($this->config()->api_base . "$relSanitisedClass/$item->ID" . ".xml");
+                        $xml .= "<$relSanitisedClass href=\"$href\" id=\"{$item->ID}\"></$relSanitisedClass>\n";
                     }
                 }
                 $xml .= "</$relName>\n";
@@ -235,7 +238,7 @@ class XMLDataFormatter extends DataFormatter
                     continue;
                 }
                 // backslashes in FQCNs kills both URIs and XML
-                $relClass = $this->sanitiseClassName($relClass);
+                $relSanitisedClass = $this->sanitiseClassName($relClass);
 
                 // Field filtering
                 if ($fields && !in_array($relName, $fields ?? [])) {
@@ -249,15 +252,15 @@ class XMLDataFormatter extends DataFormatter
                 $items = $obj->$relName();
                 if ($items) {
                     foreach ($items as $item) {
-                        $href = Director::absoluteURL($this->config()->api_base . "$relClass/$item->ID" . ".xml");
-                        $xml .= "<$relClass href=\"$href\" id=\"{$item->ID}\"></$relClass>\n";
+                        $href = Director::absoluteURL($this->config()->api_base . "$relSanitisedClass/$item->ID" . ".xml");
+                        $xml .= "<$relSanitisedClass href=\"$href\" id=\"{$item->ID}\"></$relSanitisedClass>\n";
                     }
                 }
                 $xml .= "</$relName>\n";
             }
         }
 
-        $xml .= "</$className>";
+        $xml .= "</$sanitisedClassName>";
 
         return $xml;
     }
@@ -297,7 +300,17 @@ class XMLDataFormatter extends DataFormatter
     {
         if (is_array($data) && count($data) === 1) {
             $firstValue = reset($data);
-            return is_array($firstValue) && array_is_list($firstValue);
+            // It's a batch if the first value is a list of items
+            if (is_array($firstValue) && array_is_list($firstValue)) {
+                return true;
+            }
+            // Or if it's a single item in a pluralized root (e.g. <Comments><Comment>...</Comment></Comments>)
+            // In this case, xml2array produces ['Comment' => [...]]
+            if (is_array($firstValue) && !array_is_list($firstValue)) {
+                // If it's a single associative array, it might be a single item batch
+                // We check if the root key (e.g. 'Comments') contains an array that looks like the object
+                return true;
+            }
         }
         return false;
     }
@@ -305,7 +318,12 @@ class XMLDataFormatter extends DataFormatter
     public function getBatchItems($data)
     {
         if ($this->isBatchData($data)) {
-            return reset($data);
+            $items = reset($data);
+            if (is_array($items) && !array_is_list($items)) {
+                // Single item batch
+                return [$items];
+            }
+            return $items;
         }
         return [$data];
     }

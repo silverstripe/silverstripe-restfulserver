@@ -350,9 +350,10 @@ abstract class DataFormatter
      * Convert an array of results to this format.
      *
      * @param array $results
+     * @param string|null $className
      * @return string
      */
-    abstract public function convertBatch(array $results);
+    abstract public function convertBatch(array $results, $className = null);
 
     /**
      * Convert a data object set to this format. Return a string.

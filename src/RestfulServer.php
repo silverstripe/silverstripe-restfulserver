@@ -998,6 +998,7 @@ class RestfulServer extends Controller
     protected function formatBatchResponse(array $results)
     {
         $formatter = $this->getResponseDataFormatter();
-        return $formatter->convertBatch($results);
+        $className = $this->request->param('ClassName');
+        return $formatter->convertBatch($results, $className);
     }
 }

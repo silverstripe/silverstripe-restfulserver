@@ -56,9 +56,10 @@ class JSONDataFormatter extends DataFormatter
 
     /**
      * @param array $results
+     * @param string|null $className
      * @return string
      */
-    public function convertBatch(array $results)
+    public function convertBatch(array $results, $className = null)
     {
         $convertedResults = [];
         foreach ($results as $result) {
