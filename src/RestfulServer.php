@@ -494,47 +494,7 @@ class RestfulServer extends Controller
      */
     protected function putHandler($className, $id)
     {
-        $this->extend('onBeforePutHandler', $className, $id, $relationName);
-        $obj = DataObject::get_by_id($className, $id);
-        if (!$obj) {
-            return $this->notFound();
-        }
-
-        if (!$obj->canEdit($this->getMember())) {
-            return $this->permissionFailure();
-        }
-
-        $reqFormatter = $this->getRequestDataFormatter($className);
-        if (!$reqFormatter) {
-            return $this->unsupportedMediaType();
-        }
-
-        $responseFormatter = $this->getResponseDataFormatter($className);
-        if (!$responseFormatter) {
-            return $this->unsupportedMediaType();
-        }
-
-        try {
-            /** @var DataObject|string */
-            $obj = $this->updateDataObject($obj, $reqFormatter);
-        } catch (ValidationException $e) {
-            return $this->validationFailure($responseFormatter, $e->getResult());
-        }
-
-        if (is_string($obj)) {
-            return $obj;
-        }
-
-        $this->getResponse()->setStatusCode(202); // Accepted
-        $this->getResponse()->addHeader('Content-Type', $responseFormatter->getOutputContentType());
-
-        // Append the default extension for the output format to the Location header
-        // or else we'll use the default (XML)
-        $types = $responseFormatter->supportedExtensions();
-        $type = '';
-        if (count($types ?? [])) {
-            $type = ".{$types[0]}";
-        }
+        $this->extend('onBeforePutHandler', $className, $id);
 
         $urlSafeClassName = $this->sanitiseClassName(get_class($obj));
         $apiBase = $this->config()->api_base;
@@ -550,7 +510,7 @@ class RestfulServer extends Controller
      */
     protected function postHandler($className, $id, $relation)
     {
-        $this->extend('onBeforePostHandler', $className, $id, $relationName);
+        $this->extend('onBeforePostHandler', $className, $id, $relation);
 
         if ($id) {
             if (!$relation) {
@@ -665,12 +625,15 @@ class RestfulServer extends Controller
             return 'No Content';
         }
 
-        if (!empty($body)) {
-            $rawdata = $formatter->convertStringToArray($body);
-        } else {
-            // assume application/x-www-form-urlencoded which is automatically parsed by PHP
-            $rawdata = $this->request->postVars();
+            if (!empty($body)) {
+                $rawData = $formatter->convertStringToArray($body);
+            } else {
+                // assume application/x-www-form-urlencoded which is automatically parsed by PHP
+                $rawData = $this->request->postVars();
+            }
         }
+
+        $this->extend('updateDataBeforeWrite', $rawData, $obj);
 
         $className = $obj->ClassName;
         // update any aliased field names
