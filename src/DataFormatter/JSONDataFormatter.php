@@ -55,6 +55,30 @@ class JSONDataFormatter extends DataFormatter
     }
 
     /**
+     * @param array $results
+     * @return string
+     */
+    public function convertBatch(array $results)
+    {
+        $convertedResults = [];
+        foreach ($results as $result) {
+            if ($result instanceof DataObjectInterface) {
+                $convertedResults[] = $this->convertDataObjectToJSONObject($result);
+            } else {
+                // If it's a string, try to decode it if it's JSON
+                if (is_string($result)) {
+                    $decoded = json_decode($result, true);
+                    $convertedResults[] = $decoded ?: $result;
+                } else {
+                    $convertedResults[] = $result;
+                }
+            }
+        }
+
+        return $this->convertArray($convertedResults);
+    }
+
+    /**
      * Generate a JSON representation of the given {@link DataObject}.
      *
      * @param DataObject $obj   The object
@@ -195,6 +219,11 @@ class JSONDataFormatter extends DataFormatter
     public function convertStringToArray($strData)
     {
         return json_decode($strData ?? '', true);
+    }
+
+    public function isBatchData($data)
+    {
+        return is_array($data) && array_is_list($data);
     }
 
     public static function cast(FieldType\DBField $dbfield)

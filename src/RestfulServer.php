@@ -2,6 +2,7 @@
 
 namespace SilverStripe\RestfulServer;
 
+use phpDocumentor\Reflection\DocBlock\Tags\Formatter;
 use SilverStripe\CMS\Model\SiteTree;
 use SilverStripe\Control\Controller;
 use SilverStripe\Control\Director;
@@ -80,6 +81,18 @@ class RestfulServer extends Controller
      * @var boolean
      */
     private static $location_header_on_create = true;
+
+    /**
+     * @config
+     * @var int
+     */
+    private static $post_status_code = 201;
+
+    /**
+     * @config
+     * @var int
+     */
+    private static $put_status_code = 202;
 
     /**
      * If no extension is given, resolve the request to this mimetype.
@@ -215,12 +228,9 @@ class RestfulServer extends Controller
             if ($this->request->isDELETE()) {
                 return $this->deleteHandler($className, $id, $relation);
             }
-        }
-        catch(PermissionFailureException $e)
-        {
+        } catch (PermissionFailureException $e) {
             $this->permissionFailure();
-        }
-        catch (\Exception $e) {
+        } catch (\Exception $e) {
             return $this->exceptionThrown($this->getRequestDataFormatter($className), $e);
         }
 
@@ -496,12 +506,7 @@ class RestfulServer extends Controller
     {
         $this->extend('onBeforePutHandler', $className, $id);
 
-        $urlSafeClassName = $this->sanitiseClassName(get_class($obj));
-        $apiBase = $this->config()->api_base;
-        $objHref = Director::absoluteURL($apiBase . "$urlSafeClassName/$obj->ID" . $type);
-        $this->getResponse()->addHeader('Location', $objHref);
-
-        return $responseFormatter->convertDataObject($obj);
+        return $this->handleWriteRequest($className, $id, null, 'PUT');
     }
 
     /**
@@ -545,52 +550,7 @@ class RestfulServer extends Controller
             return true;
         }
 
-        if (!singleton($className)->canCreate($this->getMember())) {
-            return $this->permissionFailure();
-        }
-
-        $obj = Injector::inst()->create($className);
-
-        $reqFormatter = $this->getRequestDataFormatter($className);
-        if (!$reqFormatter) {
-            return $this->unsupportedMediaType();
-        }
-
-        $responseFormatter = $this->getResponseDataFormatter($className);
-
-        try {
-            /** @var DataObject|string $obj */
-            $obj = $this->updateDataObject($obj, $reqFormatter);
-        } catch (ValidationException $e) {
-            return $this->validationFailure($responseFormatter, $e->getResult());
-        }
-
-        if (is_string($obj)) {
-            return $obj;
-        }
-
-        $this->getResponse()->setStatusCode(201); // Created
-        $this->getResponse()->addHeader('Content-Type', $responseFormatter->getOutputContentType());
-
-        // Append the default extension for the output format to the Location header
-        // or else we'll use the default (XML)
-        $types = $responseFormatter->supportedExtensions();
-        $type = '';
-        if (count($types ?? [])) {
-            $type = ".{$types[0]}";
-        }
-
-        // Deviate slightly from the spec: Helps datamodel API access restrict
-        // to consulting just canCreate(), not canView() as a result of the additional
-        // "Location" header.
-        if ($this->config()->get('location_header_on_create')) {
-            $urlSafeClassName = $this->sanitiseClassName(get_class($obj));
-            $apiBase = $this->config()->api_base;
-            $objHref = Director::absoluteURL($apiBase . "$urlSafeClassName/$obj->ID" . $type);
-            $this->getResponse()->addHeader('Location', $objHref);
-        }
-
-        return $responseFormatter->convertDataObject($obj);
+        return $this->handleWriteRequest($className, $id, $relation, 'POST');
     }
 
     protected function isValidID($id): bool
@@ -614,16 +574,18 @@ class RestfulServer extends Controller
      *
      * @param DataObject $obj
      * @param DataFormatter $formatter
+     * @param array|null $rawData
      * @return DataObject|string The passed object, or "No Content" if incomplete input data is provided
      */
-    protected function updateDataObject($obj, $formatter)
+    protected function updateDataObject($obj, $formatter, $rawData = null)
     {
-        // if neither an http body nor POST data is present, return error
-        $body = $this->request->getBody();
-        if (!$body && !$this->request->postVars()) {
-            $this->getResponse()->setStatusCode(204); // No Content
-            return 'No Content';
-        }
+        if ($rawData === null) {
+            // if neither an http body nor POST data is present, return error
+            $body = $this->request->getBody();
+            if (!$body && !$this->request->postVars()) {
+                $this->getResponse()->setStatusCode(204); // No Content
+                return 'No Content';
+            }
 
             if (!empty($body)) {
                 $rawData = $formatter->convertStringToArray($body);
@@ -638,7 +600,7 @@ class RestfulServer extends Controller
         $className = $obj->ClassName;
         // update any aliased field names
         $data = [];
-        foreach ($rawdata as $key => $value) {
+        foreach ($rawData as $key => $value) {
             $newkey = $formatter->getRealFieldName($className, $key);
             $data[$newkey] = $value;
         }
@@ -654,6 +616,147 @@ class RestfulServer extends Controller
         $obj->write();
 
         return $obj;
+    }
+
+    /**
+     * @param string $className
+     * @param int|string|null $id
+     * @param string|null $relation
+     * @param string $method
+     * @return mixed
+     */
+    protected function handleWriteRequest($className, $id, $relation, $method)
+    {
+        $reqFormatter = $this->getRequestDataFormatter($className);
+        if (!$reqFormatter) {
+            return $this->unsupportedMediaType();
+        }
+
+        $responseFormatter = $this->getResponseDataFormatter($className);
+        if (!$responseFormatter) {
+            return $this->unsupportedMediaType();
+        }
+
+        $body = $this->request->getBody();
+        if (!$body && !$this->request->postVars()) {
+            $this->getResponse()->setStatusCode(204); // No Content
+            return 'No Content';
+        }
+
+        if (!empty($body)) {
+            $decodedData = $reqFormatter->convertStringToArray($body);
+        } else {
+            $decodedData = $this->request->postVars();
+        }
+
+        $this->extend('onBeforeBatchProcess', $decodedData, $className, $id, $relation, $method);
+
+        if ($reqFormatter->isBatchData($decodedData)) {
+            $items = $reqFormatter->getBatchItems($decodedData);
+            $results = [];
+            foreach ($items as $itemData) {
+                $results[] = $this->processSingleItem($className, $id, $relation, $method, $itemData);
+            }
+
+            if ($method === 'POST') {
+                $this->getResponse()->setStatusCode($this->config()->get('post_status_code'));
+            } else {
+                $this->getResponse()->setStatusCode($this->config()->get('put_status_code'));
+            }
+
+            $this->getResponse()->addHeader('Content-Type', $responseFormatter->getOutputContentType());
+            return $this->formatBatchResponse($results);
+        }
+
+        $result = $this->processSingleItem($className, $id, $relation, $method, $decodedData);
+
+        if ($result instanceof DataObject) {
+            if ($method === 'POST') {
+                $this->getResponse()->setStatusCode($this->config()->get('post_status_code'));
+            } else {
+                $this->getResponse()->setStatusCode($this->config()->get('put_status_code'));
+            }
+
+            $this->getResponse()->addHeader('Content-Type', $responseFormatter->getOutputContentType());
+
+            // Append the default extension for the output format to the Location header
+            // or else we'll use the default (XML)
+            $types = $responseFormatter->supportedExtensions();
+            $type = '';
+            if (count($types ?? [])) {
+                $type = ".{$types[0]}";
+            }
+
+            if ($this->config()->get('location_header_on_create') || $method === 'PUT') {
+                $urlSafeClassName = $this->sanitiseClassName(get_class($result));
+                $apiBase = $this->config()->api_base;
+                $objHref = Director::absoluteURL($apiBase . "$urlSafeClassName/$result->ID" . $type);
+                $this->getResponse()->addHeader('Location', $objHref);
+            }
+
+            return $responseFormatter->convertDataObject($result);
+        }
+
+        return $result;
+    }
+
+    /**
+     * @param string $className
+     * @param int|string|null $id
+     * @param string|null $relation
+     * @param string $method
+     * @param array $data
+     * @return DataObject|string
+     */
+    protected function processSingleItem($className, $id, $relation, $method, $data)
+    {
+        $reqFormatter = $this->getRequestDataFormatter($className);
+        $responseFormatter = $this->getResponseDataFormatter($className);
+
+        if ($method === 'PUT') {
+            if (!$id) {
+                $id = $this->getDataIdentifier($data);
+            }
+
+            if (!$id || !$this->isValidID($id)) {
+                return $this->notFound();
+            }
+
+            $obj = $this->getObjectQuery($className, $id, $this->request->getVars())->first();
+            if (!$obj) {
+                return $this->notFound();
+            }
+
+            if (!$obj->canEdit($this->getMember())) {
+                return $this->permissionFailure();
+            }
+        } else {
+            // POST
+            if (!singleton($className)->canCreate($this->getMember())) {
+                return $this->permissionFailure();
+            }
+            $obj = Injector::inst()->create($className);
+        }
+
+        try {
+            /** @var DataObject|string $obj */
+            $obj = $this->updateDataObject($obj, $reqFormatter, $data);
+        } catch (ValidationException $e) {
+            return $this->validationFailure($responseFormatter, $e->getResult());
+        }
+
+        return $obj;
+    }
+
+    /**
+     * @param array $data
+     * @return mixed
+     */
+    protected function getDataIdentifier($data)
+    {
+        $id = $data['ID'] ?? null;
+        $this->extend('updateDataIdentifier', $data, $id);
+        return $id;
     }
 
     /**
@@ -887,5 +990,14 @@ class RestfulServer extends Controller
         $aliases = static::config()->get('endpoint_aliases');
 
         return empty($aliases[$className]) ? $this->unsanitiseClassName($className) : $aliases[$className];
+    }
+    /**
+     * @param array $results
+     * @return string
+     */
+    protected function formatBatchResponse(array $results)
+    {
+        $formatter = $this->getResponseDataFormatter();
+        return $formatter->convertBatch($results);
     }
 }

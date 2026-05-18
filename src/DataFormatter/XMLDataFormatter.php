@@ -91,6 +91,34 @@ class XMLDataFormatter extends DataFormatter
     }
 
     /**
+     * @param array $results
+     * @return string
+     */
+    public function convertBatch(array $results)
+    {
+        $xml = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n";
+        $xml .= "<BatchResponse>\n";
+        foreach ($results as $res) {
+            if ($res instanceof DataObjectInterface) {
+                $xml .= $this->convertDataObjectWithoutHeader($res);
+            } elseif (is_array($res)) {
+                $xml .= $this->convertArrayWithoutHeader($res);
+            } else {
+                // Check if it's already an XML string (has <)
+                if (is_string($res) && strpos($res, '<') !== false) {
+                    // strip xml declaration if present
+                    $res = preg_replace('/^<\?xml[^>]*\?>/i', '', $res);
+                    $xml .= $res;
+                } else {
+                    $xml .= "<Result>" . Convert::raw2xml((string)$res) . "</Result>";
+                }
+            }
+        }
+        $xml .= "</BatchResponse>";
+        return $xml;
+    }
+
+    /**
      * Generate an XML representation of the given {@link DataObject}.
      *
      * @param DataObject $obj
@@ -263,6 +291,23 @@ class XMLDataFormatter extends DataFormatter
     public function convertStringToArray($strData)
     {
         return XMLDataFormatter::xml2array($strData);
+    }
+
+    public function isBatchData($data)
+    {
+        if (is_array($data) && count($data ?? []) === 1) {
+            $firstValue = reset($data);
+            return is_array($firstValue) && array_is_list($firstValue);
+        }
+        return false;
+    }
+
+    public function getBatchItems($data)
+    {
+        if ($this->isBatchData($data)) {
+            return reset($data);
+        }
+        return [$data];
     }
 
     /**
