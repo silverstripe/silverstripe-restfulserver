@@ -295,7 +295,7 @@ class XMLDataFormatter extends DataFormatter
 
     public function isBatchData($data)
     {
-        if (is_array($data) && count($data ?? []) === 1) {
+        if (is_array($data) && count($data) === 1) {
             $firstValue = reset($data);
             return is_array($firstValue) && array_is_list($firstValue);
         }
