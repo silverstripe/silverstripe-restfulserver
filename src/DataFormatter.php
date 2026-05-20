@@ -347,6 +347,15 @@ abstract class DataFormatter
     abstract public function convertDataObject(DataObjectInterface $do);
 
     /**
+     * Convert an array of results to this format.
+     *
+     * @param array $results
+     * @param string|null $className
+     * @return string
+     */
+    abstract public function convertBatch(array $results, $className = null);
+
+    /**
      * Convert a data object set to this format. Return a string.
      *
      * @param SS_List $set
@@ -368,6 +377,30 @@ abstract class DataFormatter
     public function convertStringToArray($strData)
     {
         user_error('DataFormatter::convertStringToArray not implemented on subclass', E_USER_ERROR);
+    }
+
+    /**
+     * Check if the given data is a batch of objects.
+     *
+     * Overwrite in subclasses with data specific logic.
+     *
+     * @param mixed $data Decoded data (e.g. from convertStringToArray)
+     * @return bool
+     */
+    public function isBatchData($data)
+    {
+        return false;
+    }
+
+    /**
+     * Extract batch items from the given data.
+     *
+     * @param mixed $data Decoded data
+     * @return array
+     */
+    public function getBatchItems($data)
+    {
+        return $this->isBatchData($data) ? $data : [$data];
     }
 
     /**

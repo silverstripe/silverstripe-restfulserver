@@ -1,0 +1,10 @@
+<RestfulServerTestComments>
+    <RestfulServerTestComment>
+        <Name>XML Batch 1</Name>
+        <Comment>XML Comment 1</Comment>
+    </RestfulServerTestComment>
+    <RestfulServerTestComment>
+        <Name>XML Batch 2</Name>
+        <Comment>XML Comment 2</Comment>
+    </RestfulServerTestComment>
+</RestfulServerTestComments>
